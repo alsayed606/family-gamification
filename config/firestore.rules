@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// ============================================================
+//  firestore.rules
+//  انسخ هذه القواعس في: Firebase Console > Firestore > Rules
+//
+//  الهدف: عزل مجموعات تطبيق العائلة (fam_*) بحيث لا يستطيع
+//  أي زائر الكتابة على بيانات أعمال Red Sea Marine.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isFamily(coll) {
+      return coll.matches('fam_.*');
+    }
+
+    // مجموعات العائلة: قراءة/كتابة مسموحة
+    match /{coll}/{docId} {
+      allow read, write: if isFamily(coll);
+    }
+
+    // كل ما عدا fam_* : ممنوع
+  }
+}
