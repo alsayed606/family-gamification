@@ -20,6 +20,14 @@ npm-debug.log*
 .env.local
 *.secret
 
-# Build output (if added later)
+# Build output — ignored by default, EXCEPT games/*/dist which is committed
+# on purpose: GitHub Pages serves this repo as-is with no CI build step, so
+# each game's built output must be checked in (run `npm run awc:build` etc.
+# before pushing). See README.md "الألعاب" section.
 dist/
 build/
+!games/*/dist/
+!games/*/dist/**
+
+# TypeScript incremental build cache (tsc -b)
+*.tsbuildinfo

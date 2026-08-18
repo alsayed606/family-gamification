@@ -1,0 +1,15 @@
+{
+  "name": "family-gamification",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Family Gamification System — hub (vanilla JS + Firebase) and standalone games (npm workspaces)",
+  "workspaces": [
+    "games/*"
+  ],
+  "scripts": {
+    "hub": "python3 -m http.server 8000",
+    "awc:dev": "npm run dev --workspace games/arabic-word-challenge",
+    "awc:build": "npm run build --workspace games/arabic-word-challenge",
+    "awc:test": "npm run test --workspace games/arabic-word-challenge"
+  }
+}
