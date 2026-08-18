@@ -37,6 +37,31 @@
     </div>
   </section>
 
+  <!-- شاشة اختيار اللعبة (Game Hub) -->
+  <section id="screen-hub" class="screen">
+    <header class="topbar">
+      <div class="tb-user">
+        <span id="hub-avatar" class="tb-avatar">🙂</span>
+        <div>
+          <strong id="hub-name">—</strong>
+          <small class="muted">اختر لعبة للبدء</small>
+        </div>
+      </div>
+      <div class="tb-coins">
+        <button id="btn-hub-admin" class="btn-ghost" hidden>
+          <i class="fa-solid fa-shield-halved"></i> لوحة التحكم
+        </button>
+        <button id="btn-hub-logout" class="btn-ghost">
+          <i class="fa-solid fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+    <div class="hub-wrap">
+      <div class="section-title">🎮 الألعاب</div>
+      <div id="hub-grid" class="hub-grid"></div>
+    </div>
+  </section>
+
   <!-- نافذة PIN -->
   <div id="pin-modal" class="modal" hidden>
     <div class="modal-card">
@@ -58,6 +83,9 @@
   <main id="app-shell" hidden>
     <header class="topbar">
       <div class="tb-user">
+        <button id="btn-hub" class="icon-btn" title="الألعاب">
+          <i class="fa-solid fa-house"></i>
+        </button>
         <span id="tb-avatar" class="tb-avatar">🙂</span>
         <div>
           <strong id="tb-name">—</strong>

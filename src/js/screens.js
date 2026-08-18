@@ -12,6 +12,25 @@ import {
   createDoc,
   setDocById,
 } from "./firebase-config.js";
+import { GAMES } from "./games.js";
+
+// ============================================================
+//  Game Hub Screen (اختيار اللعبة)
+// ============================================================
+export function renderHub(el, onSelect) {
+  el.innerHTML = GAMES.map((g) => `
+    <div class="game-card" data-game="${g.id}">
+      <span class="emoji">${g.icon}</span>
+      <div class="nm">${g.name}</div>
+      <p class="desc">${g.desc}</p>
+      ${g.kind === "external" ? '<span class="badge">تبويب جديد</span>' : ""}
+    </div>
+  `).join("");
+
+  $$(".game-card", el).forEach((card) => {
+    card.addEventListener("click", () => onSelect(card.dataset.game));
+  });
+}
 
 // ============================================================
 //  Dashboard Screen

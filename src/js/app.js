@@ -6,7 +6,8 @@
 import { $, $$, toast } from "./ui-utils.js";
 import { saveSession, loadSession, clearSession, getAdminPin } from "./auth.js";
 import { renderLoginAvatars, setupLoginListener, openPin, setupPinPad } from "./login.js";
-import { renderDashboard, renderTasks, renderLeaderboard, renderShop, renderAdmin } from "./screens.js";
+import { renderHub, renderDashboard, renderTasks, renderLeaderboard, renderShop, renderAdmin } from "./screens.js";
+import { GAMES } from "./games.js";
 import { COLLECTIONS, listenDoc } from "./firebase-config.js";
 
 // ============================================================
@@ -25,7 +26,7 @@ async function boot() {
   // Setup PIN Pad
   setupPinPad();
 
-  // Setup Navigation
+  // Setup Navigation (داخل اللعبة الحالية)
   $$(".nav-btn").forEach(b => {
     b.addEventListener("click", () => switchView(b.dataset.view));
   });
@@ -48,6 +49,11 @@ async function boot() {
     renderLoginAvatars(users, (uid) => enterApp(uid, false));
   });
 
+  // Game Hub controls
+  $("#btn-hub").addEventListener("click", showHub);
+  $("#btn-hub-logout").addEventListener("click", logout);
+  $("#btn-hub-admin").addEventListener("click", openControlPanel);
+
   // Restore Session
   const s = loadSession();
   if (s?.userId) enterApp(s.userId, !!s.isAdmin);
@@ -66,12 +72,13 @@ function enterApp(userId, isAdmin) {
     if (!u) { logout(); return; }
     State.me = u;
     paintTopbar(u);
+    paintHubHeader(u);
   });
 
   $("#screen-login").classList.remove("active");
-  $("#app-shell").hidden = false;
   $("#nav-admin").hidden = !isAdmin;
-  switchView("dashboard");
+  $("#btn-hub-admin").hidden = !isAdmin;
+  showHub();
 }
 
 function logout() {
@@ -80,7 +87,37 @@ function logout() {
   State.isAdmin = false;
   clearSession();
   $("#app-shell").hidden = true;
+  $("#screen-hub").classList.remove("active");
   $("#screen-login").classList.add("active");
+}
+
+// ============================================================
+//  Game Hub (اختيار اللعبة)
+// ============================================================
+function showHub() {
+  $("#app-shell").hidden = true;
+  $("#screen-hub").classList.add("active");
+  renderHub($("#hub-grid"), enterGame);
+}
+
+function enterGame(gameId) {
+  const game = GAMES.find((g) => g.id === gameId);
+  if (!game) return;
+
+  if (game.kind === "external") {
+    window.open(game.url, "_blank", "noopener");
+    return;
+  }
+
+  $("#screen-hub").classList.remove("active");
+  $("#app-shell").hidden = false;
+  switchView(game.view);
+}
+
+function openControlPanel() {
+  $("#screen-hub").classList.remove("active");
+  $("#app-shell").hidden = false;
+  switchView("admin");
 }
 
 function paintTopbar(u) {
@@ -91,8 +128,13 @@ function paintTopbar(u) {
   $("#tb-gems").textContent = u.gems ?? 0;
 }
 
+function paintHubHeader(u) {
+  $("#hub-avatar").textContent = u.avatar || "🙂";
+  $("#hub-name").textContent = u.name || "—";
+}
+
 // ============================================================
-//  Navigation
+//  Navigation (داخل لعبة المهام والمكافآت)
 // ============================================================
 function switchView(name) {
   $$(".view").forEach(v => v.classList.toggle("active", v.id === `view-${name}`));
