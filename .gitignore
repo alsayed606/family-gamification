@@ -20,6 +20,10 @@ npm-debug.log*
 .env.local
 *.secret
 
+# إعدادات Firebase المحلية (كل مطوّر يضبط مشروعه)
+src/js/firebase-config.local.js
+.firebaserc
+
 # Build output — ignored by default, EXCEPT games/*/dist which is committed
 # on purpose: GitHub Pages serves this repo as-is with no CI build step, so
 # each game's built output must be checked in (run `npm run awc:build` etc.

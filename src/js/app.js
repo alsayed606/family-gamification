@@ -4,8 +4,8 @@
 // ============================================================
 
 import { $, $$, toast } from "./ui-utils.js";
-import { saveSession, loadSession, clearSession, getAdminPin } from "./auth.js";
-import { renderLoginAvatars, setupLoginListener, openPin, setupPinPad } from "./login.js";
+import { saveSession, loadSession, clearSession } from "./auth.js";
+import { renderLoginAvatars, setupLoginListener, setupPinPad } from "./login.js";
 import { renderHub, renderDashboard, renderTasks, renderLeaderboard, renderShop, renderAdmin } from "./screens.js";
 import { GAMES } from "./games.js";
 import { COLLECTIONS, listenDoc } from "./firebase-config.js";
@@ -31,18 +31,9 @@ async function boot() {
     b.addEventListener("click", () => switchView(b.dataset.view));
   });
 
-  // Setup Admin Login
-  $("#btn-admin-login").addEventListener("click", () => {
-    openPin("رمز الإدارة", (entered) => {
-      if (entered === getAdminPin()) {
-        enterApp(loadSession()?.userId || "admin_session", true);
-        toast("مرحبًا أيها المدير 👑");
-        return true;
-      }
-      toast("رمز الإدارة خاطئ");
-      return false;
-    });
-  });
+  // ⚠️ أُزيل مدخل "دخول الإدارة" في المرحلة 0: كان يقارن بـ PIN مكتوب
+  // صراحةً في الكود المصدري على مستودع عام. يعود في المرحلة 1 عبر
+  // Firebase Auth ودور admin مفروض على الخادم.
 
   // Listen to Users List
   setupLoginListener((users) => {

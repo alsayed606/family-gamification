@@ -34,12 +34,11 @@ family-gamification/
 │       ├── src/                 #   screens/ · hooks/ · lib/ · data/words.ts
 │       ├── tests/                #   Vitest
 │       └── dist/                #   ناتج البناء — يُرفع لـ git عمداً (راجع تشغيل الألعاب أدناه)
-├── data/
-│   └── seed.html                # إنشاء البيانات الأولية
 ├── config/
-│   ├── firestore.rules          # قواعس أمان Firebase
+│   ├── firestore.rules          # قواعد أمان Firebase (رفض شامل حاليًا)
 │   └── firebase-config.md       # توثيق الإعدادات
 ├── docs/
+│   ├── PHASE-0.md               # ⚠️ إجراءات أمنية مطلوبة — اقرأه أولًا
 │   ├── README-AR.md             # دليل عربي
 │   ├── SETUP.md                 # خطوات الإعداد
 │   └── GITHUB-UPLOAD.md         # رفع على GitHub
@@ -60,47 +59,34 @@ python -m http.server 8000
 
 ### 2️⃣ إعداد Firebase
 
-1. اذهب إلى [Firebase Console](https://console.firebase.google.com/)
-2. اختر `marine-command-center`
-3. **Firestore Database** → **Create**
-4. **Rules** → انسخ محتوى `config/firestore.rules`
-5. **Publish**
+يعمل المشروع على **مشروع Firebase مخصّص** — راجع `config/firebase-config.md`.
+أنشئ `src/js/firebase-config.local.js` بإعدادات مشروعك (الملف مستثنى من git)،
+ثم انشر `config/firestore.rules`.
 
-### 3️⃣ إنشاء البيانات الأولية
-
-افتح: `http://localhost:8000/data/seed.html`
-اضغط **إنشاء البيانات الآن**
-
-### 4️⃣ شغّل التطبيق
+### 3️⃣ شغّل التطبيق
 
 افتح: `http://localhost:8000/src/html/`
 
 ---
 
-## 🔑 بيانات الدخول
+## 🔑 الدخول
 
-| الاسم | Emoji | PIN | الدور |
-|-------|-------|-----|--------|
-| الأب | 👨 | — | Admin |
-| الأم | 👩 | — | User |
-| سارة | 👧 | 1111 | User |
-| خالد | 👦 | 2222 | User |
-
-**رمز الإدارة:** `1234` ← غيّره في `src/js/auth.js`
+نظام الدخول القديم (اختيار شخصية + PIN مخزّن كنص صريح) **أُلغي في المرحلة 0**،
+ولا توجد بيانات دخول تجريبية. يُبنى نظام المصادقة الحقيقي في المرحلة 1 على
+Firebase Authentication — راجع `docs/PHASE-0.md`.
 
 ---
 
-## 📋 المميزات الحالية
+## 📋 حالة المميزات
 
-✅ نظام دخول (PIN + بدون PIN)
-✅ Game Hub لاختيار اللعبة بعد الدخول
-✅ Dashboard (مستوى، XP، كوينز، جواهر)
-✅ المهام مع Confetti + Notifications
-✅ لوحة ترتيب Realtime
-✅ لوحة إدارة (إضافة أفراد ومهام)
-✅ لعبة "تحدي الكلمات العربية" (فريقان، جرس، بنك 674 كلمة)
-✅ Dark Gaming UI (نيون + توهج)
-✅ Mobile-first + RTL كامل
+| الميزة | الحالة |
+|---|---|
+| Game Hub لاختيار اللعبة | ✅ يعمل |
+| لعبة "تحدي الكلمات العربية" (بنك 674 كلمة) | ✅ تعمل بلا خادم (free play) |
+| Dark Gaming UI + RTL + Mobile-first | ✅ يعمل |
+| Dashboard / مهام / لوحة ترتيب / لوحة إدارة | ⏸️ معطّلة — تنتظر مصادقة المرحلة 1 |
+| المصادقة والأدوار | ⏳ المرحلة 1 (Firebase Auth) |
+| نقاط بسلطة الخادم + دفتر غير قابل للتعديل | ⏳ المرحلة 1 |
 
 ---
 

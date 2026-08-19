@@ -1,186 +1,101 @@
-# 📋 خطوات الإعداد الكاملة
+# 📋 خطوات الإعداد
 
-## الخطوة 1: الإعداد المحلي
+> ⚠️ **اقرأ `docs/PHASE-0.md` أولًا.** أُلغي في المرحلة 0 نظام الدخول القديم
+> (اختيار شخصية + PIN)، وفُصل المشروع عن مشروع Firebase المشترك. لا توجد
+> بيانات دخول تجريبية، ولوحة المهام معطّلة حتى تُبنى المصادقة في المرحلة 1.
+>
+> ما يعمل الآن بلا إعداد: **لعبة تحدي الكلمات العربية** (تعمل محليًا بلا خادم).
 
-### تثبيت البرامج المطلوبة
-- **Git:** [git-scm.com](https://git-scm.com/)
-- **Node.js:** [nodejs.org](https://nodejs.org/) (اختياري)
-- **Python:** [python.org](https://python.org/) (للـ local server)
+---
 
-### استنساخ المشروع
+## المتطلبات
+
+- **Git** — [git-scm.com](https://git-scm.com/)
+- **Node.js 20+** — [nodejs.org](https://nodejs.org/) (للعبة الكلمات)
+- **Python 3** — لتشغيل خادم محلي بسيط
+
+---
+
+## 1. استنساخ المشروع
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/family-gamification.git
+git clone https://github.com/alsayed606/family-gamification.git
 cd family-gamification
+npm install
 ```
 
-### تشغيل local server
+---
 
-**باستخدام Python:**
+## 2. تشغيل لعبة الكلمات (لا تحتاج Firebase)
+
 ```bash
-python -m http.server 8000
+npm run awc:dev     # وضع التطوير
+npm run awc:test    # 30 اختبار Vitest
+npm run awc:build   # بناء الإنتاج إلى games/arabic-word-challenge/dist/
+```
+
+---
+
+## 3. تشغيل الواجهة الرئيسية (Hub)
+
+```bash
+python3 -m http.server 8000
 # افتح: http://localhost:8000/src/html/
 ```
 
-**أو باستخدام Node.js:**
-```bash
-npx http-server
-# افتح: http://localhost:8080/src/html/
-```
+الـ Hub يعرض الألعاب المسجّلة في `src/js/games.js`. لعبة الكلمات تعمل بعد
+`npm run awc:build`.
 
 ---
 
-## الخطوة 2: إعداد Firebase
+## 4. إعداد Firebase (اختياري في المرحلة 0)
 
-### أ) تفعيل Firestore
+الشاشات المعتمدة على Firestore (المهام، لوحة الترتيب، الإدارة) معطّلة حاليًا
+لأن قواعد الأمان تمنع كل وصول حتى تُبنى المصادقة.
 
-1. اذهب إلى [Firebase Console](https://console.firebase.google.com/)
-2. اختر project `marine-command-center`
-3. اذهب إلى **Firestore Database**
-4. اضغط **Create Database**
-5. اختر:
-   - **Start in Production Mode**
-   - Region: `asia-southeast1`
-6. اضغط **Create**
+إذا أردت تجهيز المشروع للمرحلة 1:
 
-### ب) تحديث Rules
+1. أنشئ **مشروع Firebase مخصّصًا** — لا تستخدم مشروعًا مشتركًا مع أي عمل آخر.
+2. أضف تطبيق ويب وانسخ الإعدادات إلى `src/js/firebase-config.local.js`
+   (مستثنى من git — الصيغة في `config/firebase-config.md`).
+3. فعّل **Firestore Database**.
+4. **Rules** → انسخ `config/firestore.rules` → **Publish**.
 
-1. في Firestore → تبويب **Rules**
-2. احذف القواعس الافتراضية
-3. انسخ محتوى `config/firestore.rules`
-4. اضغط **Publish**
+> القواعد الحالية ترفض كل قراءة وكتابة عمدًا. هذا هو السلوك الصحيح قبل وجود
+> مصادقة: ما لا يمكن التحقق منه لا يُسمح به.
 
 ---
 
-## الخطوة 3: إنشاء البيانات الأولية
+## 5. النشر على GitHub Pages
 
-1. افتح: `http://localhost:8000/data/seed.html`
-2. اضغط **إنشاء البيانات الآن**
-3. انتظر الرسائل الخضراء ✅
+- **Settings** → **Pages** → Branch: `main` / `(root)` → **Save**
+- الرابط: `https://<USERNAME>.github.io/family-gamification/src/html/`
 
-**البيانات التي ستُنشأ:**
-- الأب (👨) - بدون PIN
-- الأم (👩) - بدون PIN
-- سارة (👧) - PIN: 1111
-- خالد (👦) - PIN: 2222
-
----
-
-## الخطوة 4: شغّل التطبيق
-
-افتح في المتصفح:
-```
-http://localhost:8000/src/html/
-```
-
----
-
-## الخطوة 5: غيّر الرمز السري
-
-**مهم جداً!**
-
-1. افتح `src/js/auth.js`
-2. ابحث عن:
-   ```javascript
-   const ADMIN_PIN = "1234";
-   ```
-3. غيّره إلى رقم قوي (مثل: `"8473"`)
-4. احفظ الملف
+> GitHub Pages تخدم ملفات ثابتة فقط. المرحلة 1 تتطلب Cloud Functions،
+> ولذلك ستنتقل الاستضافة إلى Firebase Hosting أو Vercel.
 
 ---
 
 ## 🐛 استكشاف الأخطاء
 
-### "لم تحمّل بطاقات الأفراد"
+**"لم تُضبط إعدادات Firebase بعد"**
+لم تُنشئ `src/js/firebase-config.local.js`. هذا متوقّع في المرحلة 0 —
+لعبة الكلمات تعمل بدونه.
 
-✅ الحل:
-1. تأكد من تشغيل `seed.html`
-2. تحقق من Firestore تفعيل
-3. افتح F12 → Network → تحقق من الأخطاء
+**بطاقات الأفراد لا تظهر / الشاشات فارغة**
+متوقّع: قواعد Firestore ترفض كل وصول حتى المرحلة 1.
 
-### "خطأ Firebase"
-
-✅ الحل:
-1. تأكد من Firestore rules نُشرت
-2. تأكد من Database region صحيح
-3. جرّب في Private Window
-
-### "PIN غير صحيح"
-
-✅ الحل:
-- سارة: `1111`
-- خالد: `2222`
-- الأب والأم: بدون PIN
+**لعبة الكلمات تعطي 404 من الـ Hub**
+شغّل `npm run awc:build` — الـ Hub يفتح `dist/index.html`.
 
 ---
 
 ## 📚 الملفات المهمة
 
-| الملف | الغرض | التعديل |
-|------|-------|--------|
-| `src/js/auth.js` | PIN والجلسة | ✏️ غيّر ADMIN_PIN |
-| `src/js/screens.js` | الشاشات | ✏️ أضف شاشات جديدة |
-| `src/css/style.css` | التصميم | ✏️ غيّر الألوان |
-| `data/seed.html` | البيانات | ✏️ أضف أفراد |
-
----
-
-## 🚀 النشر على GitHub Pages
-
-### 1️⃣ أنشئ repository
-
-```
-github.com/new
-→ family-gamification
-→ Public
-→ Create
-```
-
-### 2️⃣ رفع الملفات
-
-```bash
-git add .
-git commit -m "Initial commit"
-git push -u origin main
-```
-
-### 3️⃣ فعّل GitHub Pages
-
-- **Settings** → **Pages**
-- Branch: `main` / Root
-- **Save**
-
-### 4️⃣ افتح التطبيق
-
-```
-https://YOUR_USERNAME.github.io/family-gamification/src/html/
-```
-
----
-
-## 💡 نصائح التطوير
-
-### هيكل الملفات يساعدك على:
-✅ تنظيم الكود
-✅ إعادة استخدام الدوال
-✅ تطوير سريع
-
-### عند إضافة ميزة:
-1. أكتب الدالة في الملف الصحيح
-2. اختبرها محليًا
-3. ارفعها على GitHub
-
-### أفضل ممارسات:
-```javascript
-// ✅ صحيح
-async function updateUser(id, data) {
-  await updateDocById(COLLECTIONS.users, id, data);
-}
-
-// ❌ خطأ
-const user = firebase_direct_call(...);
-```
-
----
-
-**تمام! أنت مستعد للتطوير 🚀**
+| الملف | الغرض |
+|---|---|
+| `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
+| `config/firestore.rules` | قواعد الأمان |
+| `config/firebase-config.md` | نموذج البيانات والإعدادات |
+| `src/js/games.js` | سجلّ الألعاب في الـ Hub |
+| `games/arabic-word-challenge/` | لعبة الكلمات (مشروع مستقل) |

@@ -76,11 +76,6 @@ git push -u origin main
 https://YOUR_USERNAME.github.io/family-gamification/src/html/
 ```
 
-أو ملف البيانات:
-```
-https://YOUR_USERNAME.github.io/family-gamification/data/seed.html
-```
-
 ---
 
 ## 🚀 تحديثات مستقبلية
@@ -101,26 +96,17 @@ git push
 
 ---
 
-## 🔐 أمان: غيّر الأرقام السرية
+## 🔐 أمان
 
-### 1️⃣ ADMIN_PIN
+> ⚠️ **حُذف القسم السابق في المرحلة 0.** كان يشرح كيف "تغيّر رمز الإدارة"
+> بتعديل ثابت في الكود المصدري ثم رفعه — وهذه ليست حماية أصلًا: أي رمز
+> في مستودع عام مكشوف للجميع فور رفعه، ويبقى في تاريخ git حتى بعد تغييره.
 
-في `src/js/auth.js`:
-```javascript
-const ADMIN_PIN = "1234";  // ← غيّر هذا!
-```
+**القاعدة:** لا تضع أي رمز أو كلمة مرور في الكود المصدري، مهما كان "قويًّا".
+الأسرار تُدار عبر متغيّرات بيئة على الخادم، والصلاحيات تُفرض في قواعد
+Firestore وعلى الخادم — لا في المتصفح.
 
-إلى:
-```javascript
-const ADMIN_PIN = "8473";  // مثال قوي
-```
-
-ثم push:
-```bash
-git add src/js/auth.js
-git commit -m "Security: Update admin PIN"
-git push
-```
+راجع `docs/PHASE-0.md` للإجراءات المطلوبة.
 
 ---
 
@@ -129,9 +115,8 @@ git push
 بعد الرفع:
 
 1. ✅ افتح الـ repo → **Settings** → **Pages** يظهر الرابط الأخضر
-2. ✅ افتح التطبيق في المتصفح
-3. ✅ شغّل `seed.html` لإنشاء البيانات
-4. ✅ ادخل بحساب test
+2. ✅ افتح التطبيق في المتصفح — يجب أن يظهر الـ Hub
+3. ✅ تأكد أن قواعد Firestore منشورة ومغلقة (`config/firestore.rules`)
 
 ---
 

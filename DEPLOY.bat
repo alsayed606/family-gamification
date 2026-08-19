@@ -75,11 +75,9 @@ if errorlevel 1 (
   echo   2. App will be live in ~2 min at:
   echo      https://%USERNAME%.github.io/family-gamification/src/html/
   echo.
-  echo   3. Run seed once at:
-  echo      https://%USERNAME%.github.io/family-gamification/data/seed.html
-  echo.
-  echo   4. Copy config/firestore.rules into Firebase Console
-  echo      Project: marine-command-center - Firestore - Rules
+  echo   3. Copy config/firestore.rules into Firebase Console
+  echo      Use a DEDICATED Firebase project - never a shared one.
+  echo      See docs/PHASE-0.md
   echo ============================================================
 )
 

@@ -3,35 +3,85 @@
 //  Firebase Modular SDK Setup + CRUD + Realtime Helpers
 // ============================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  addDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  onSnapshot,
-  serverTimestamp,
-  increment,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ============================================================
+//  إعدادات Firebase
+//
+//  ⚠️ المرحلة 0: فُصل هذا التطبيق عن مشروع marine-command-center
+//  (المشترك مع أعمال Red Sea Marine). لا يجوز لتطبيق العائلة أن يشارك
+//  مشروعًا مع بيانات أعمال.
+//
+//  للتشغيل: أنشئ مشروع Firebase مخصّصًا، ثم انسخ إعداداته إلى
+//  src/js/firebase-config.local.js (الملف مستثنى من git):
+//
+//      export const firebaseConfig = {
+//        apiKey: "...", authDomain: "...", projectId: "...",
+//        storageBucket: "...", messagingSenderId: "...", appId: "...",
+//      };
+//
+//  ملاحظة: مفتاح apiKey في Firebase ليس سرًّا — الحدّ الأمني الحقيقي هو
+//  قواعد Firestore و App Check، وليس إخفاء الإعدادات.
+//
+//  لماذا الاستيراد ديناميكي أدناه؟ عبارات import الثابتة تُرفع وتُنفَّذ قبل
+//  أي كود في الوحدة، فلو كانت ثابتة لانهار الملف عند أول سطر حين يكون
+//  الـ CDN محجوبًا (شبكة مقيّدة، مانع إعلانات، أو انقطاع) — وتظهر شاشة
+//  بيضاء بلا تفسير. الاستيراد الديناميكي يسمح بفحص الإعدادات أولًا،
+//  وبإظهار رسالة مفهومة لكل حالة فشل على حدة.
+// ============================================================
 
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCW-9S1RLNnIa12oAdikFSKg4Y4Bpsl7os",
-  authDomain: "marine-command-center.firebaseapp.com",
-  projectId: "marine-command-center",
-  storageBucket: "marine-command-center.firebasestorage.app",
-  messagingSenderId: "781767817474",
-  appId: "1:781767817474:web:4a965e8b21cbfdd1dbaa1b",
-};
+const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
+
+function fatal(msg) {
+  const show = () =>
+    document.body.insertAdjacentHTML(
+      "afterbegin",
+      `<div style="position:fixed;inset-inline:0;top:0;z-index:999;padding:14px;
+        background:#3a1220;color:#ffd9de;font:700 14px/1.7 system-ui;text-align:center">
+        ⚠️ ${msg}</div>`
+    );
+  // الاستيراد الديناميكي أعلاه يجعل بقية الوحدة تُستأنف بعد إطلاق
+  // DOMContentLoaded غالبًا، فلا نعتمد على المستمع وحده.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", show, { once: true });
+  } else {
+    show();
+  }
+  return new Error(msg);
+}
+
+// 1) الإعدادات المحلية أولًا — قبل أي طلب شبكة.
+let firebaseConfig = null;
+try {
+  ({ firebaseConfig } = await import("./firebase-config.local.js"));
+} catch {
+  // لا يوجد ملف إعدادات محلي — يُعالَج أدناه.
+}
+
+if (!firebaseConfig?.projectId) {
+  throw fatal(
+    "لم تُضبط إعدادات Firebase بعد. أنشئ مشروعًا مخصّصًا وأضف " +
+      "src/js/firebase-config.local.js — راجع docs/PHASE-0.md"
+  );
+}
+
+// 2) ثم تحميل الـ SDK.
+let initializeApp,
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
+  updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot,
+  serverTimestamp, increment;
+
+try {
+  ({ initializeApp } = await import(`${SDK}/firebase-app.js`));
+  ({
+    getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
+    updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot,
+    serverTimestamp, increment,
+  } = await import(`${SDK}/firebase-firestore.js`));
+} catch {
+  throw fatal(
+    "تعذّر تحميل Firebase SDK من الإنترنت. تحقّق من الاتصال أو من مانع " +
+      "الإعلانات، ثم أعد تحميل الصفحة."
+  );
+}
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
