@@ -4,7 +4,17 @@ import {
   assertSucceeds,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  where,
+} from "firebase/firestore";
 import {
   ADMIN_UID,
   MEMBER_UID,
@@ -66,6 +76,22 @@ describe("العزل بين المستخدمين", () => {
   it("العضو لا يقرأ مستند عضو آخر", async () => {
     const db = verified(env, MEMBER_UID);
     await assertFails(getDoc(doc(db, "users", OTHER_UID)));
+  });
+
+  it("العضو لا يسرد مجموعة المستخدمين كاملة", async () => {
+    // السرد غير القراءة المفردة: لولا رفضه لاستطاع أي عضو تنزيل قائمة
+    // كل الحسابات وبُردها من Console المتصفح، متجاوزًا حجب الشاشة.
+    const db = verified(env, MEMBER_UID);
+    await assertFails(getDocs(collection(db, "users")));
+  });
+
+  it("العضو لا يسرد حتى باستعلام يدّعي أنه له", async () => {
+    // القاعدة لا تعتمد على الاستعلام بل على كل مستند يُرجَع؛ ومع ذلك
+    // نتحقق صراحةً من ألا ينجح التفافٌ عبر where.
+    const db = verified(env, MEMBER_UID);
+    await assertFails(
+      getDocs(query(collection(db, "users"), where("role", "==", "member")))
+    );
   });
 
   it("العضو لا يعدّل مستند عضو آخر", async () => {
@@ -287,6 +313,11 @@ describe("ما يُسمح به", () => {
   it("المدير يقرأ مستند أي مستخدم", async () => {
     const db = verified(env, ADMIN_UID);
     await assertSucceeds(getDoc(doc(db, "users", MEMBER_UID)));
+  });
+
+  it("المدير يسرد كل المستخدمين (تحتاجه لوحة التحكم)", async () => {
+    const db = verified(env, ADMIN_UID);
+    await assertSucceeds(getDocs(collection(db, "users")));
   });
 
   it("المدير يرقّي عضوًا آخر إلى admin", async () => {

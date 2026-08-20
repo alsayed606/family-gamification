@@ -347,3 +347,48 @@ body {
 .chip:active { transform: scale(0.95); }
 .chip.is-active { border-color: var(--neon); color: var(--txt); box-shadow: var(--glow); }
 .chip-avatar { font-size: 20px; line-height: 1; }
+
+/* ── لوحة المدير ─────────────────────────────────────────── */
+
+.user-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px;
+  border: 1px solid var(--card-brd);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.user-row.is-self { border-color: rgba(0, 229, 255, 0.35); }
+.user-row.is-suspended { opacity: 0.62; }
+
+.user-avatar { font-size: 30px; line-height: 1; }
+.user-meta { flex: 1 1 180px; min-width: 0; display: grid; gap: 3px; }
+.user-meta strong { font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.user-meta small { font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+
+.self-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--neon);
+}
+
+.badges { display: flex; gap: 6px; margin-top: 3px; }
+.badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-brd);
+  color: var(--muted);
+}
+.badge-gold { color: var(--gold); border-color: rgba(255, 206, 77, 0.45); }
+.badge-danger { color: #ffb3c0; border-color: rgba(255, 84, 112, 0.45); }
+
+.user-actions { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }

@@ -7,11 +7,12 @@ import {
 } from "../auth/guards";
 import { Hub } from "../screens/Hub";
 import { Account } from "../screens/Account";
+import { Admin } from "../screens/Admin";
+import { Suspended } from "../screens/Suspended";
 import { Login } from "../screens/Login";
 import { Register } from "../screens/Register";
 import { Verify } from "../screens/Verify";
 import { ResetPassword } from "../screens/ResetPassword";
-import { Placeholder } from "../screens/Placeholder";
 import { ErrorScreen } from "../screens/ErrorScreen";
 
 // ============================================================
@@ -45,16 +46,7 @@ export const router = createHashRouter([
         element: <RequireAuth />,
         children: [
           { path: "/verify", element: <Verify /> },
-          {
-            path: "/suspended",
-            element: (
-              <Placeholder
-                title="الحساب موقوف"
-                note="أوقف المدير هذا الحساب. راجعه لإعادة تفعيله."
-                step="الخطوة 6"
-              />
-            ),
-          },
+          { path: "/suspended", element: <Suspended /> },
         ],
       },
 
@@ -71,16 +63,7 @@ export const router = createHashRouter([
       {
         element: <RequireAdmin />,
         children: [
-          {
-            path: "/admin",
-            element: (
-              <Placeholder
-                title="لوحة التحكم"
-                note="عرض المستخدمين، وتغيير الأدوار والحالات."
-                step="الخطوة 6"
-              />
-            ),
-          },
+          { path: "/admin", element: <Admin /> },
         ],
       },
 
