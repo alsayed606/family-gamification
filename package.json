@@ -2,14 +2,32 @@
   "name": "family-gamification",
   "private": true,
   "version": "1.0.0",
-  "description": "Family Gamification System — hub (vanilla JS + Firebase) and standalone games (npm workspaces)",
-  "workspaces": [
-    "games/*"
-  ],
+  "description": "Family Game Center — React app (Firebase Auth + Firestore) and standalone games",
+  "type": "module",
   "scripts": {
-    "hub": "python3 -m http.server 8000",
-    "awc:dev": "npm run dev --workspace games/arabic-word-challenge",
-    "awc:build": "npm run build --workspace games/arabic-word-challenge",
-    "awc:test": "npm run test --workspace games/arabic-word-challenge"
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "emulator": "firebase emulators:start --project demo-family-game-center",
+    "preview": "vite preview",
+    "rules:test": "firebase emulators:exec --only firestore --project demo-family-game-center \"vitest run --config vitest.rules.config.ts\"",
+    "test": "vitest run",
+    "test:all": "npm run test && npm run rules:test",
+    "typecheck": "tsc -b --force"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "firebase-tools": "^13.35.1",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "firebase": "^11.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6"
   }
 }

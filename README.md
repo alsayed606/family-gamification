@@ -1,214 +1,113 @@
-# 🎮 نظام العائلة التفاعلي للإجازات
-**Family Gamification System — Summer 2026**
+# 🎮 مركز الألعاب العائلي
 
-> تطبيق ويب متكامل للعائلة مع نقاط ومستويات ومهام وألعاب واقعية ومتجر مكافآت  
-> **كل شيء Realtime من Firebase!**
+> منصّة ألعاب لمركز واحد: مدير واحد، عدة عائلات وأصدقاء، وواجهة عربية RTL.
+
+**المرحلة الحالية:** المرحلة 1 — مصادقة حقيقية وأدوار وألعاب في وضع
+**free play** (بلا نقاط رسمية). راجع `docs/PHASE-0.md` قبل أي تشغيل.
 
 ---
 
-## 📦 هيكل المشروع
+## 📦 الهيكل
 
-المستودع الآن **Game Hub**: شاشة دخول واحدة تقود إلى شاشة اختيار اللعبة
-(`src/js/games.js`)، وكل لعبة تعمل لحالها. لعبة "المهام والمكافآت" داخلية
-(Vanilla JS + Firebase، بلا build step)، وبقية الألعاب مشاريع مستقلة تحت
-`games/` (مثلاً React + Vite) تُبنى وتُفتح في تبويب جديد.
+تطبيق **React + Vite + TypeScript** واحد. كل لعبة مجلد داخل `src/games/`
+يُحمَّل كسولًا عند فتحه فقط، فلا يُثقل أول تحميل.
 
 ```
 family-gamification/
-├── package.json                 # جذر npm workspaces (يجمع مشاريع games/*)
-├── src/                         # الـ Hub + لعبة "المهام والمكافآت" (Vanilla JS)
-│   ├── html/
-│   │   └── index.html           # شاشة الدخول + Game Hub + شاشات اللعبة
-│   ├── js/
-│   │   ├── app.js               # Controller رئيسي (تسجيل الدخول، التنقل بين الألعاب)
-│   │   ├── games.js             # سجلّ الألعاب المعروضة في الـ Hub
-│   │   ├── firebase-config.js    # Firebase SDK + CRUD
-│   │   ├── auth.js              # الجلسة والتسجيل
-│   │   ├── login.js             # شاشة الدخول + PIN
-│   │   ├── screens.js           # الشاشات (Hub, Dashboard, Tasks, etc)
-│   │   └── ui-utils.js          # مساعدات UI
-│   └── css/
-│       └── style.css            # Dark Gaming UI
-├── games/                       # ألعاب إضافية، كل واحدة مشروع مستقل
-│   └── arabic-word-challenge/   # React + Vite + TypeScript + Tailwind
-│       ├── src/                 #   screens/ · hooks/ · lib/ · data/words.ts
-│       ├── tests/                #   Vitest
-│       └── dist/                #   ناتج البناء — يُرفع لـ git عمداً (راجع تشغيل الألعاب أدناه)
-├── data/
-│   └── seed.html                # إنشاء البيانات الأولية
+├── index.html                    # نقطة دخول Vite
+├── firebase.json                 # إعداد المحاكيات (Auth + Firestore)
+├── src/
+│   ├── main.tsx
+│   ├── app/router.tsx            # HashRouter + الحرّاس
+│   ├── auth/                     # AuthProvider · useAuth · guards · actions
+│   ├── screens/                  # Login · Register · Verify · Reset ·
+│   │                             #   Hub · Account · Admin · Suspended
+│   ├── components/               # Field · Banner · AvatarPicker · Spinner …
+│   ├── hooks/                    # useProfiles · useActiveProfile · useUsers
+│   ├── lib/                      # firebase · validation · authErrors · admin …
+│   ├── games/
+│   │   └── arabic-word-challenge/  # لعبة كاملة (674 كلمة، 15 مجالاً)
+│   └── styles/global.css
 ├── config/
-│   ├── firestore.rules          # قواعس أمان Firebase
-│   └── firebase-config.md       # توثيق الإعدادات
-├── docs/
-│   ├── README-AR.md             # دليل عربي
-│   ├── SETUP.md                 # خطوات الإعداد
-│   └── GITHUB-UPLOAD.md         # رفع على GitHub
-└── README.md                    # هذا الملف
+│   ├── firestore.rules           # الحدّ الأمني الحقيقي
+│   └── firestore.indexes.json
+├── tests/
+│   ├── unit/                     # منطق خالص (بلا محاكي)
+│   └── rules/                    # قواعد الأمان (مع المحاكي)
+└── docs/                         # PHASE-0 · ADMIN · SETUP …
 ```
 
 ---
 
-## 🚀 البدء السريع
-
-### 1️⃣ الإعداد المحلي
+## 🚀 التشغيل
 
 ```bash
-cd family-gamification
-python -m http.server 8000
-# افتح: http://localhost:8000/src/html/
+npm install
+
+# تطوير على المحاكيات — لا يحتاج مشروع Firebase حقيقي
+cp .env.example .env.local        # واترك VITE_USE_EMULATOR=true
+npm run emulator                  # طرفية أولى
+npm run dev                       # طرفية ثانية → http://localhost:5173
 ```
 
-### 2️⃣ إعداد Firebase
-
-1. اذهب إلى [Firebase Console](https://console.firebase.google.com/)
-2. اختر `marine-command-center`
-3. **Firestore Database** → **Create**
-4. **Rules** → انسخ محتوى `config/firestore.rules`
-5. **Publish**
-
-### 3️⃣ إنشاء البيانات الأولية
-
-افتح: `http://localhost:8000/data/seed.html`
-اضغط **إنشاء البيانات الآن**
-
-### 4️⃣ شغّل التطبيق
-
-افتح: `http://localhost:8000/src/html/`
+للتشغيل على مشروع Firebase حقيقي: املأ `VITE_FIREBASE_*` في `.env.local`
+واضبط `VITE_USE_EMULATOR=false` — راجع `config/firebase-config.md`.
 
 ---
 
-## 🔑 بيانات الدخول
-
-| الاسم | Emoji | PIN | الدور |
-|-------|-------|-----|--------|
-| الأب | 👨 | — | Admin |
-| الأم | 👩 | — | User |
-| سارة | 👧 | 1111 | User |
-| خالد | 👦 | 2222 | User |
-
-**رمز الإدارة:** `1234` ← غيّره في `src/js/auth.js`
-
----
-
-## 📋 المميزات الحالية
-
-✅ نظام دخول (PIN + بدون PIN)
-✅ Game Hub لاختيار اللعبة بعد الدخول
-✅ Dashboard (مستوى، XP، كوينز، جواهر)
-✅ المهام مع Confetti + Notifications
-✅ لوحة ترتيب Realtime
-✅ لوحة إدارة (إضافة أفراد ومهام)
-✅ لعبة "تحدي الكلمات العربية" (فريقان، جرس، بنك 674 كلمة)
-✅ Dark Gaming UI (نيون + توهج)
-✅ Mobile-first + RTL كامل
-
----
-
-## 🎮 تشغيل الألعاب
-
-### لعبة "المهام والمكافآت" (داخلية، بلا build)
+## 🧪 الاختبارات
 
 ```bash
-npm run hub
-# افتح: http://localhost:8000/src/html/
+npm test          # 62 اختبار وحدة (منطق خالص، سريع)
+npm run rules:test # 40 اختبار لقواعد Firestore على المحاكي
+npm run test:all   # الاثنان معًا
+npm run typecheck  # tsc بلا أخطاء
 ```
 
-### لعبة "تحدي الكلمات العربية" (React + Vite)
-
-```bash
-npm install                 # مرة واحدة من جذر المستودع (يثبّت كل الألعاب عبر workspaces)
-npm run awc:dev              # تطوير مباشر مع Hot Reload
-npm run awc:test             # Vitest
-npm run awc:build            # يبني إلى games/arabic-word-challenge/dist/
-```
-
-**مهم:** الاستضافة (GitHub Pages) تخدم ملفات المستودع كما هي بلا خطوة بناء،
-لذا `games/*/dist/` **مرفوعة على git عمداً** (راجع `.gitignore`). بعد أي
-تعديل على لعبة React، شغّل `npm run awc:build` وارفع نتيجة `dist/` الجديدة
-ضمن نفس الـ commit — وإلا سيبقى Hub يفتح نسخة قديمة من اللعبة.
-
----
-
-## 🛠️ التطوير
-
-### إضافة ميزة داخل لعبة "المهام والمكافآت"
-
-1. أنشئ دالة في `src/js/screens.js`
-2. اربطها في `src/js/app.js`
-3. أضف styling في `src/css/style.css`
-
-### مثال: إضافة قسم "Events"
-
-```javascript
-// في screens.js
-export function renderEvents(el, user) {
-  el.innerHTML = `<div>الأحداث</div>`;
-}
-
-// في app.js
-else if (name === "events") renderEvents(el, State.me);
-```
-
-### إضافة لعبة جديدة إلى Hub
-
-1. أنشئ مشروعها تحت `games/<اسم-اللعبة>/` (أي stack تفضّله — لا يلزم React).
-2. سجّلها في `src/js/games.js` ضمن `GAMES`:
-   ```javascript
-   { id: "my-game", kind: "external", url: "../../games/my-game/dist/index.html",
-     name: "اسم اللعبة", icon: "🎲", desc: "وصف قصير." }
-   ```
-   أو `kind: "internal"` إن كانت شاشة داخل نفس تطبيق الـ Hub (مثل "tasks").
-3. إن احتاجت بنك أسئلة، اجعله في مصدر بيانات مستقل (ملف JSON/TS أو مجموعة
-   Firestore بادئتها `fam_`) بحيث تقدر أي لعبة أخرى تعيد استخدامه لاحقاً بدل
-   تكراره داخل كل لعبة.
-
----
-
-## 📁 ملفات مهمة
-
-| الملف | الغرض |
-|------|-------|
-| `src/js/firebase-config.js` | كل دوال Firebase (CRUD + Realtime) |
-| `src/js/auth.js` | الجلسة والـ PIN |
-| `src/js/screens.js` | رسم جميع الشاشات |
-| `config/firestore.rules` | أمان قاعدة البيانات |
+اختبارات القواعد **أغلبها سلبي** عمدًا: تثبت ما لا يُسمح به، لا ما يُسمح.
+وقد جرى التحقق منها بإضعاف القواعد عمدًا للتأكد أنها تكشف الثغرات فعلًا.
 
 ---
 
 ## 🔐 الأمان
 
-✅ مجموعات `fam_*` محمية فقط
-✅ PIN في localStorage
-✅ Realtime updates آمنة
+| الثابت | المكان |
+|---|---|
+| العضو لا يقرأ ولا يسرد بيانات غيره | `config/firestore.rules` |
+| لا مسار للترقّي الذاتي إلى `admin` | القاعدة تثبّت الدور عند الإنشاء |
+| المدير لا يعدّل دور نفسه (وقاية من قفل النظام) | `userId != request.auth.uid` |
+| مستندات المستخدمين غير قابلة للحذف | `allow delete: if false` |
+| ملف الابن بيانات عرض بحتة، بلا أي سلطة | `!('role' in …)` |
 
-⚠️ لحماية أفضل: فعّل Firebase Anonymous Auth
+**الفرض على الخادم لا في المتصفح.** حرّاس المسارات في React تجربة استخدام
+فقط؛ قواعد Firestore هي ما يمنع الوصول فعلًا.
+
+**المدير الأول** يُعيَّن يدويًا مرة واحدة من Firebase Console —
+راجع `docs/ADMIN.md`.
+
+---
+
+## 🎲 إضافة لعبة جديدة
+
+1. أنشئ `src/games/<اسم-اللعبة>/App.tsx` يُصدّر مكوّنًا افتراضيًا.
+2. أضف مسارًا كسولًا في `src/app/router.tsx` (انظر `src/screens/GameRoute.tsx`).
+3. سجّلها في `src/lib/games.ts`.
+
+> إن احتاجت اللعبة بنك أسئلة، اجعله في `src/games/<اللعبة>/data/` أو في
+> مجموعة Firestore مستقلة، بحيث تعيد لعبة أخرى استخدامه بدل تكراره.
+>
+> ⚠️ لا تضع `@import` لخطوط خارجية داخل CSS اللعبة: فيت يسبق تحميل CSS
+> الحزم الكسولة وينتظره، فيُسقط فشلُ الخطوط مسارَ اللعبة كاملًا. حمّلها
+> من المكوّن كما في `src/games/arabic-word-challenge/App.tsx`.
 
 ---
 
 ## 📖 التوثيق
 
-- `docs/README-AR.md` - دليل عربي شامل
-- `docs/SETUP.md` - خطوات التطوير
-- `docs/GITHUB-UPLOAD.md` - رفع على GitHub
-
----
-
-## 🚀 رفع على GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: Family Gamification System"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/family-gamification.git
-git push -u origin main
-```
-
-ثم فعّل GitHub Pages:
-- **Settings** → **Pages** → Branch: `main` → Save
-
----
-
-**بُني بـ ❤️ من قبل Abdullah**
-
-*نظام عائلي تفاعلي حقيقي — ليس بروتوتايب.*
+| الملف | المحتوى |
+|---|---|
+| `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
+| `docs/ADMIN.md` | الأدوار وتعيين المدير الأول |
+| `docs/SETUP.md` | خطوات الإعداد التفصيلية |
+| `docs/DEPLOY.md` | النشر على GitHub Pages عبر Actions |
+| `config/firebase-config.md` | نموذج البيانات وإعداد المشروع |

@@ -1,0 +1,91 @@
+name: Checks and deploy
+
+# مسار واحد بوظيفتين:
+#   • على كل PR إلى main — يُشغّل الفحوصات فقط (بلا نشر).
+#   • على كل دفعة إلى main — نفس الفحوصات ثم النشر إلى GitHub Pages.
+# لا يُرفع أي ناتج بناء إلى git، فلا يمكن أن يفترق المنشور عن المصدر.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# الحدّ الأدنى على مستوى المسار. صلاحيات النشر تُمنح لوظيفة deploy وحدها،
+# فلا يحمل بناءُ الـ PR رمزًا يستطيع الكتابة على Pages.
+permissions:
+  contents: read
+
+concurrency:
+  # النشر إلى Pages مورد واحد: دفعات main تتزاحم على مجموعة واحدة وتُلغي
+  # الأقدم. أما فحوصات الـ PR فلكل فرع مجموعته، حتى لا يُلغي فحصُ PR نشرةً
+  # جارية — ولا يُلغي دفعُ تصحيح إلى PR فحصَه السابق على فرع آخر.
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.head_ref) || 'pages' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: فحص الأنواع
+        run: npm run typecheck
+
+      - name: اختبارات الوحدة
+        run: npm test
+
+      # قواعد الأمان هي الحدّ الوحيد في نظام بلا خادم، فتُختبر في كل دفعة.
+      # المحاكي يحتاج Java، وهي مثبّتة مسبقًا على ubuntu-latest.
+      - name: اختبارات قواعد Firestore
+        run: npm run rules:test
+
+      - name: البناء
+        env:
+          # إعدادات Firebase للويب ليست أسرارًا — تُرسل للمتصفح بالضرورة،
+          # ولذلك تُخزَّن كـ Variables لا Secrets. الحدّ الأمني هو قواعد
+          # Firestore، لا إخفاء هذه القيم.
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: npm run build
+
+      # تنبيه عن إعداد النشر، فلا معنى له على PR لا يَنشر.
+      - name: تنبيه إن لم تُضبط الإعدادات
+        if: ${{ github.event_name != 'pull_request' && vars.VITE_FIREBASE_PROJECT_ID == '' }}
+        run: |
+          echo "::warning::لم تُضبط متغيّرات VITE_FIREBASE_* في إعدادات المستودع."
+          echo "سيُنشر الموقع لكنه سيعرض شاشة «تعذّر تشغيل التطبيق»."
+          echo "اضبطها من: Settings ← Secrets and variables ← Actions ← Variables"
+          echo "راجع docs/DEPLOY.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  deploy:
+    # لا نشر من PR: الفحوصات وحدها تعمل هناك.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
