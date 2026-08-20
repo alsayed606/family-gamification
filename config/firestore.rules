@@ -1,33 +1,134 @@
 rules_version = '2';
 
 // ============================================================
-//  firestore.rules — مشروع مركز الألعاب العائلي (المخصّص)
+//  firestore.rules — مركز الألعاب العائلي
 //
-//  ⚠️ هذه القواعد للمشروع الجديد المخصّص فقط.
-//  لا تنسخها إلى مشروع marine-command-center — راجع docs/PHASE-0.md
-//  للتعليمات الخاصة بتنظيف المشروع المشترك.
+//  ⚠️ هذه القواعد للمشروع المخصّص فقط. لا تنسخها إلى أي مشروع مشترك.
 //
-//  المرحلة 0 — الوضع الحالي: رفض كل شيء.
-//  التطبيق لا يملك حتى الآن نظام مصادقة حقيقيًا، والقاعدة الذهبية أن
-//  ما لا يمكن التحقق منه لا يُسمح به. البيانات القديمة (fam_*) اعتُبرت
-//  بيانات تجريبية ولن تُرحَّل (قرار "بداية نظيفة").
+//  النموذج: مركز واحد، مدير واحد، عدة مستخدمين. لا يوجد tenantId.
 //
-//  المرحلة 1 — ما سيُبنى فوق هذا الأساس:
-//    - Firebase Auth: ولي أمر موثّق البريد + أدوار عبر Custom Claims.
-//    - عضوية العائلة تُفحص بـ exists() على مستند العضو، لا عبر
-//      claim باسم familyId (الـ claims تتأخر حتى ساعة عند التحديث،
-//      وتنكسر مع تعدّد العائلات أو إنشاء عائلة جديدة).
-//    - كل كتابة على النقاط/الدفتر/قرارات المراجعة تتم من الخادم حصرًا،
-//      ويبقى allow write: if false للعميل دائمًا.
-//    - الإجابة الصحيحة لا تُخزَّن في نفس مستند السؤال، لأن قواعد
-//      Firestore تعمل على مستوى المستند لا الحقل.
+//  ── لماذا الأدوار في مستندات لا في Custom Claims ──
+//  تعيين Custom Claims يتطلب Admin SDK، أي خادمًا، أي خطة Blaze.
+//  المشروع بلا ميزانية، فالأدوار تُخزَّن في users/{uid}.role وتُفحص هنا
+//  عبر get(). الحماية حقيقية لأن هذه القواعد تُنفَّذ على خوادم Google
+//  لا في المتصفح: المستخدم يقرأ دوره ولا يستطيع تعديله.
+//
+//  ── تمهيد المدير الأول ──
+//  يُنشأ مستند المدير يدويًا من Firebase Console (الـ Console يتجاوز
+//  القواعد). لا توجد قاعدة تسمح بالترقّي الذاتي إلى admin — بقصد.
+//
+//  ── ملفات الأبناء ليست حدًّا أمنيًا ──
+//  users/{uid}/profiles/* بيانات عرض بحتة. لا قاعدة واحدة هنا تقرأ
+//  الملفات لاتخاذ قرار تفويض، وتبديل الملف النشط يحدث في المتصفح
+//  فيستحيل الوثوق به. كل الصلاحيات تبقى صلاحيات حساب ولي الأمر.
+//  ولمنع أي التباس مستقبلي، يُمنع كتابة role/status داخل الملفات أصلًا.
 // ============================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // رفض شامل حتى تُبنى المصادقة والأدوار في المرحلة 1.
-    // أي مجموعة لا تملك قاعدة allow صريحة تُرفض تلقائيًا — وهذا مقصود.
+    // ── مساعدات ──────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function callerExists() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function callerDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // مدير = موثّق البريد + مستنده موجود + دوره admin + حسابه فعّال.
+    function isAdmin() {
+      return isVerified()
+        && callerExists()
+        && callerDoc().role == 'admin'
+        && callerDoc().status == 'ACTIVE';
+    }
+
+    function isValidRole(r)   { return r == 'admin' || r == 'member'; }
+    function isValidStatus(s) { return s == 'ACTIVE' || s == 'SUSPENDED'; }
+
+    function isValidName(n) {
+      return n is string && n.size() > 0 && n.size() <= 40;
+    }
+
+    // ── المستخدمون ───────────────────────────────────────────
+
+    match /users/{userId} {
+
+      // الخصوصية بالافتراض: لا يرى المستخدم إلا نفسه؛ المدير يرى الجميع.
+      // قواعد Firestore تعمل على مستوى المستند لا الحقل، فلا يمكن إخفاء
+      // البريد عن بقية الأعضاء ضمن نفس المستند — ولذلك يُمنع الوصول كليًا.
+      // عند الحاجة للوحة ترتيب لاحقًا يُضاف مستند عام منفصل بحقول آمنة.
+      allow read: if isSelf(userId) || isAdmin();
+
+      // التسجيل الذاتي: بدور member حصرًا. الترقية تأتي من المدير فقط.
+      // لا يُشترط توثيق البريد هنا كي يُنشأ الملف لحظة التسجيل، والدور
+      // مثبَّت على member فلا خطر من ذلك.
+      allow create: if isSelf(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.role == 'member'
+        && request.resource.data.status == 'ACTIVE'
+        && isValidName(request.resource.data.displayName)
+        && request.resource.data.email is string
+        && request.resource.data.avatar is string;
+
+      // تعديل ذاتي: الاسم والصورة فقط. الدور والحالة والمعرّف ثابتة.
+      allow update: if isSelf(userId)
+        && isVerified()
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.uid == resource.data.uid
+        && isValidName(request.resource.data.displayName);
+
+      // تعديل إداري: المدير يغيّر أدوار وحالات الآخرين — لا نفسه.
+      // منع تعديل الذات يقي من قفل المدير لنفسه خارج النظام بالخطأ.
+      allow update: if isAdmin()
+        && userId != request.auth.uid
+        && request.resource.data.uid == resource.data.uid
+        && isValidRole(request.resource.data.role)
+        && isValidStatus(request.resource.data.status)
+        && isValidName(request.resource.data.displayName);
+
+      // الحذف يفقد التاريخ ويكسر المراجع. التعطيل عبر status = SUSPENDED.
+      allow delete: if false;
+
+      // ── ملفات الأبناء ──────────────────────────────────────
+      match /profiles/{profileId} {
+        allow read: if (isSelf(userId) && isVerified()) || isAdmin();
+
+        allow create, update: if isSelf(userId)
+          && isVerified()
+          && isValidName(request.resource.data.displayName)
+          && request.resource.data.avatar is string
+          && !('role' in request.resource.data)
+          && !('status' in request.resource.data)
+          && (
+            !('ageBand' in request.resource.data)
+            || request.resource.data.ageBand in
+                 ['UNDER_6', '6_8', '9_12', '13_15', '16_PLUS']
+          );
+
+        allow delete: if (isSelf(userId) && isVerified()) || isAdmin();
+      }
+    }
+
+    // ── كل ما عدا ذلك ────────────────────────────────────────
+    // أي مجموعة بلا قاعدة allow صريحة مرفوضة تلقائيًا. هذا البلوك
+    // توثيق صريح للنيّة، ولا يمنح شيئًا.
     match /{document=**} {
       allow read, write: if false;
     }

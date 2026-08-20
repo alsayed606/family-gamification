@@ -35,3 +35,8 @@ build/
 
 # TypeScript incremental build cache (tsc -b)
 *.tsbuildinfo
+
+# ناتج محاكي Firebase
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
