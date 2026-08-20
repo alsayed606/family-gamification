@@ -274,3 +274,76 @@ body {
 .avatar-option:hover { border-color: var(--neon); }
 .avatar-option:active { transform: scale(0.9); }
 .avatar-option.is-selected { border-color: var(--neon); box-shadow: var(--glow); background: rgba(0, 229, 255, 0.1); }
+
+/* ── شاشة الحساب وملفات الأبناء ──────────────────────────── */
+
+.stack { display: grid; gap: 14px; }
+.card.inner-card { background: rgba(255, 255, 255, 0.03); padding: 16px; }
+
+.readonly-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  padding: 9px 0;
+  border-top: 1px solid var(--card-brd);
+}
+
+.field select {
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--txt);
+  border: 1px solid var(--card-brd);
+  border-radius: 12px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.profile-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--card-brd);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+}
+.profile-avatar { font-size: 30px; line-height: 1; }
+.profile-meta { flex: 1; min-width: 0; display: grid; }
+.profile-meta strong { font-weight: 800; }
+.profile-meta small { font-size: 12px; }
+.profile-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.btn-ghost.danger { color: #ffb3c0; border-color: rgba(255, 84, 112, 0.4); }
+
+.row-actions { display: flex; gap: 8px; }
+.row-actions .btn { flex: 1; }
+
+/* ── مبدّل اللاعب ────────────────────────────────────────── */
+
+.switcher { display: grid; gap: 8px; }
+.switcher-label { font-size: 13px; font-weight: 700; color: var(--muted); }
+.switcher-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-brd);
+  background: var(--card);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--tap), border-color var(--tap), color var(--tap);
+}
+.chip:active { transform: scale(0.95); }
+.chip.is-active { border-color: var(--neon); color: var(--txt); box-shadow: var(--glow); }
+.chip-avatar { font-size: 20px; line-height: 1; }

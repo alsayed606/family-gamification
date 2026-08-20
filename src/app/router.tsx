@@ -6,6 +6,7 @@ import {
   RequireVerified,
 } from "../auth/guards";
 import { Hub } from "../screens/Hub";
+import { Account } from "../screens/Account";
 import { Login } from "../screens/Login";
 import { Register } from "../screens/Register";
 import { Verify } from "../screens/Verify";
@@ -62,16 +63,7 @@ export const router = createHashRouter([
         element: <RequireVerified />,
         children: [
           { path: "/hub", element: <Hub /> },
-          {
-            path: "/account",
-            element: (
-              <Placeholder
-                title="حسابي"
-                note="الاسم والصورة، وإدارة ملفات الأبناء."
-                step="الخطوة 5"
-              />
-            ),
-          },
+          { path: "/account", element: <Account /> },
         ],
       },
 
