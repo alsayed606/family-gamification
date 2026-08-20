@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import { logout } from "../auth/actions";
 import { GAMES } from "../lib/games";
 
 export function Hub() {
@@ -24,6 +25,9 @@ export function Hub() {
           <Link className="btn-ghost" to="/account">
             حسابي
           </Link>
+          <button className="btn-ghost" onClick={() => void logout()}>
+            خروج
+          </button>
         </nav>
       </header>
 

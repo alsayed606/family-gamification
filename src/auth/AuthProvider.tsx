@@ -2,10 +2,11 @@ import {
   createContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { onIdTokenChanged, type User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import type { UserDoc } from "../types";
@@ -31,17 +32,27 @@ export const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [profile, setProfile] = useState<UserDoc | null>(null);
   const [profileResolved, setProfileResolved] = useState(false);
+  const lastUid = useRef<string | null>(null);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (next) => {
-      // يُصفَّر مع المستخدم، لا داخل تأثير لاحق: لو تأخّر التصفير لَظهرت
-      // لحظة تبدو فيها الحالة نهائية بينما الدور لم يصل بعد، فيُطرد
-      // المدير من /admin عند فتح الرابط مباشرةً.
-      setProfileResolved(next === null);
-      setProfile(null);
+    // onIdTokenChanged لا onAuthStateChanged: الأخير لا يُطلق عند تجديد
+    // الرمز، وتوثيق البريد يقع في تبويب آخر. بعد user.reload() يبقى كائن
+    // المستخدم بنفس المرجع، فلا يعيد React الرسم — لذلك نحفظ emailVerified
+    // كقيمة أوّلية مستقلة تتغيّر فيلتقطها React.
+    return onIdTokenChanged(auth, (next) => {
+      // ref لا حالة: المستمع يُركَّب مرة واحدة، فقراءة user من الحالة هنا
+      // تلتقط قيمة أول رسم إلى الأبد وتجعل كل تجديد رمز يبدو تبديل مستخدم
+      // فيُمسح الملف ويومض المؤشّر بلا داعٍ.
+      if (next?.uid !== lastUid.current) {
+        lastUid.current = next?.uid ?? null;
+        setProfileResolved(next === null);
+        setProfile(null);
+      }
       setUser(next);
+      setEmailVerified(next?.emailVerified ?? false);
       setLoading(false);
     });
   }, []);
@@ -67,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const value = useMemo<AuthState>(() => {
-    const isVerified = user?.emailVerified === true;
+    // من الحالة الأوّلية لا من user.emailVerified: كائن المستخدم يُعدَّل
+    // في مكانه عند reload() فلا يلاحظ React تغيّره.
+    const isVerified = emailVerified;
     return {
       loading,
       user,
@@ -79,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: isVerified && profile?.role === "admin" && profile.status === "ACTIVE",
       isSuspended: profile?.status === "SUSPENDED",
     };
-  }, [loading, user, profile, profileResolved]);
+  }, [loading, user, emailVerified, profile, profileResolved]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

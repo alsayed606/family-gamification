@@ -6,6 +6,10 @@ import {
   RequireVerified,
 } from "../auth/guards";
 import { Hub } from "../screens/Hub";
+import { Login } from "../screens/Login";
+import { Register } from "../screens/Register";
+import { Verify } from "../screens/Verify";
+import { ResetPassword } from "../screens/ResetPassword";
 import { Placeholder } from "../screens/Placeholder";
 import { ErrorScreen } from "../screens/ErrorScreen";
 
@@ -29,26 +33,9 @@ export const router = createHashRouter([
       {
         element: <RedirectIfSignedIn />,
         children: [
-          {
-            path: "/login",
-            element: (
-              <Placeholder
-                title="تسجيل الدخول"
-                note="الدخول بالبريد وكلمة المرور، مع إنشاء حساب واستعادة كلمة المرور."
-                step="الخطوة 4"
-              />
-            ),
-          },
-          {
-            path: "/register",
-            element: (
-              <Placeholder
-                title="حساب جديد"
-                note="تسجيل ولي أمر ببريد إلكتروني، ثم توثيق البريد."
-                step="الخطوة 4"
-              />
-            ),
-          },
+          { path: "/login", element: <Login /> },
+          { path: "/register", element: <Register /> },
+          { path: "/reset", element: <ResetPassword /> },
         ],
       },
 
@@ -56,16 +43,7 @@ export const router = createHashRouter([
       {
         element: <RequireAuth />,
         children: [
-          {
-            path: "/verify",
-            element: (
-              <Placeholder
-                title="وثّق بريدك"
-                note="أُرسلت رسالة تحقق. بعد التوثيق تُفتح بقية أقسام النظام."
-                step="الخطوة 4"
-              />
-            ),
-          },
+          { path: "/verify", element: <Verify /> },
           {
             path: "/suspended",
             element: (
