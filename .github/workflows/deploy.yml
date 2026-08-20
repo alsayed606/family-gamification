@@ -1,21 +1,27 @@
-name: Build and deploy to GitHub Pages
+name: Checks and deploy
 
-# يُبنى التطبيق في CI ويُنشر ناتج dist/. لا يُرفع أي ناتج بناء إلى git،
-# فلا يمكن أن يفترق المنشور عن المصدر.
+# مسار واحد بوظيفتين:
+#   • على كل PR إلى main — يُشغّل الفحوصات فقط (بلا نشر).
+#   • على كل دفعة إلى main — نفس الفحوصات ثم النشر إلى GitHub Pages.
+# لا يُرفع أي ناتج بناء إلى git، فلا يمكن أن يفترق المنشور عن المصدر.
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
+# الحدّ الأدنى على مستوى المسار. صلاحيات النشر تُمنح لوظيفة deploy وحدها،
+# فلا يحمل بناءُ الـ PR رمزًا يستطيع الكتابة على Pages.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# نشرة واحدة في كل مرة؛ الدفعات المتلاحقة تُلغي الأقدم بدل التسابق.
 concurrency:
-  group: pages
+  # النشر إلى Pages مورد واحد: دفعات main تتزاحم على مجموعة واحدة وتُلغي
+  # الأقدم. أما فحوصات الـ PR فلكل فرع مجموعته، حتى لا يُلغي فحصُ PR نشرةً
+  # جارية — ولا يُلغي دفعُ تصحيح إلى PR فحصَه السابق على فرع آخر.
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.head_ref) || 'pages' }}
   cancel-in-progress: true
 
 jobs:
@@ -55,8 +61,9 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
         run: npm run build
 
+      # تنبيه عن إعداد النشر، فلا معنى له على PR لا يَنشر.
       - name: تنبيه إن لم تُضبط الإعدادات
-        if: ${{ vars.VITE_FIREBASE_PROJECT_ID == '' }}
+        if: ${{ github.event_name != 'pull_request' && vars.VITE_FIREBASE_PROJECT_ID == '' }}
         run: |
           echo "::warning::لم تُضبط متغيّرات VITE_FIREBASE_* في إعدادات المستودع."
           echo "سيُنشر الموقع لكنه سيعرض شاشة «تعذّر تشغيل التطبيق»."
@@ -64,12 +71,18 @@ jobs:
           echo "راجع docs/DEPLOY.md" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: dist
 
   deploy:
+    # لا نشر من PR: الفحوصات وحدها تعمل هناك.
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
