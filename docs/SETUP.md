@@ -26,38 +26,28 @@ npm install
 
 ---
 
-## 2. تشغيل لعبة الكلمات (لا تحتاج Firebase)
+## 2. التشغيل على المحاكيات (لا يحتاج مشروع Firebase)
 
 ```bash
-npm run awc:dev     # وضع التطوير
-npm run awc:test    # 30 اختبار Vitest
-npm run awc:build   # بناء الإنتاج إلى games/arabic-word-challenge/dist/
+cp .env.example .env.local   # اترك VITE_USE_EMULATOR=true
+npm run emulator             # طرفية أولى — Auth + Firestore
+npm run dev                  # طرفية ثانية → http://localhost:5173
+```
+
+الـ Hub يعرض الألعاب المسجّلة في `src/lib/games.ts`، واللعبة مسار كسول
+لا يحتاج بناءً منفصلًا.
+
+```bash
+npm test            # 62 اختبار وحدة
+npm run rules:test  # 40 اختبار قواعد على المحاكي
 ```
 
 ---
 
-## 3. تشغيل الواجهة الرئيسية (Hub)
-
-```bash
-python3 -m http.server 8000
-# افتح: http://localhost:8000/src/html/
-```
-
-الـ Hub يعرض الألعاب المسجّلة في `src/js/games.js`. لعبة الكلمات تعمل بعد
-`npm run awc:build`.
-
----
-
-## 4. إعداد Firebase (اختياري في المرحلة 0)
-
-الشاشات المعتمدة على Firestore (المهام، لوحة الترتيب، الإدارة) معطّلة حاليًا
-لأن قواعد الأمان تمنع كل وصول حتى تُبنى المصادقة.
-
-إذا أردت تجهيز المشروع للمرحلة 1:
+## 3. التشغيل على مشروع Firebase حقيقي
 
 1. أنشئ **مشروع Firebase مخصّصًا** — لا تستخدم مشروعًا مشتركًا مع أي عمل آخر.
-2. أضف تطبيق ويب وانسخ الإعدادات إلى `src/js/firebase-config.local.js`
-   (مستثنى من git — الصيغة في `config/firebase-config.md`).
+2. أضف تطبيق ويب وانسخ الإعدادات إلى `.env.local` (مستثنى من git — الصيغة في `.env.example`).
 3. فعّل **Firestore Database**.
 4. **Rules** → انسخ `config/firestore.rules` → **Publish**.
 
@@ -66,27 +56,27 @@ python3 -m http.server 8000
 
 ---
 
-## 5. النشر على GitHub Pages
+## 4. النشر على GitHub Pages
 
 - **Settings** → **Pages** → Branch: `main` / `(root)` → **Save**
-- الرابط: `https://<USERNAME>.github.io/family-gamification/src/html/`
+- الرابط يُضبط في الخطوة 8 (النشر) — الناتج في `dist/` لا في جذر المستودع.
 
-> GitHub Pages تخدم ملفات ثابتة فقط. المرحلة 1 تتطلب Cloud Functions،
-> ولذلك ستنتقل الاستضافة إلى Firebase Hosting أو Vercel.
+> GitHub Pages تخدم ملفات ثابتة فقط — وهذا يكفي: التطبيق كلّه من طرف
+> العميل، ولا Cloud Functions في المرحلة 1. لذلك اختير HashRouter، فلا
+> تحتاج إعادة كتابة المسارات على الخادم.
 
 ---
 
 ## 🐛 استكشاف الأخطاء
 
-**"لم تُضبط إعدادات Firebase بعد"**
-لم تُنشئ `src/js/firebase-config.local.js`. هذا متوقّع في المرحلة 0 —
-لعبة الكلمات تعمل بدونه.
+**"لم تُضبط إعدادات Firebase"**
+لم تُنشئ `.env.local`. انسخه من `.env.example` وشغّل المحاكيات.
 
-**بطاقات الأفراد لا تظهر / الشاشات فارغة**
-متوقّع: قواعد Firestore ترفض كل وصول حتى المرحلة 1.
+**«جارٍ التحقق من الجلسة» لا تنتهي**
+تأكّد أن محاكي Auth يعمل على 9099 ومحاكي Firestore على 8080.
 
-**لعبة الكلمات تعطي 404 من الـ Hub**
-شغّل `npm run awc:build` — الـ Hub يفتح `dist/index.html`.
+**اللعبة لا تُفتح**
+تأكّد أن `npm run dev` يعمل. اللعبة مسار كسول داخل التطبيق ولا تحتاج بناءً منفصلًا.
 
 ---
 
@@ -97,5 +87,5 @@ python3 -m http.server 8000
 | `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
 | `config/firestore.rules` | قواعد الأمان |
 | `config/firebase-config.md` | نموذج البيانات والإعدادات |
-| `src/js/games.js` | سجلّ الألعاب في الـ Hub |
-| `games/arabic-word-challenge/` | لعبة الكلمات (مشروع مستقل) |
+| `src/lib/games.ts` | سجلّ الألعاب في الـ Hub |
+| `src/games/arabic-word-challenge/` | لعبة الكلمات (مسار كسول) |

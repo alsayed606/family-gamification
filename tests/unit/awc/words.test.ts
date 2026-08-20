@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORIES, DEFAULT_WORDS } from "../src/data/words";
-import { AR_ONLY, countLetters } from "../src/lib/arabic";
+import { CATEGORIES, DEFAULT_WORDS } from "../../../src/games/arabic-word-challenge/data/words";
+import { AR_ONLY, countLetters } from "../../../src/games/arabic-word-challenge/lib/arabic";
 
 describe("word bank data integrity", () => {
   it("has 15 categories and 674 words as specified", () => {

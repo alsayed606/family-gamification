@@ -4,20 +4,14 @@
   "version": "1.0.0",
   "description": "Family Game Center — React app (Firebase Auth + Firestore) and standalone games",
   "type": "module",
-  "workspaces": [
-    "games/*"
-  ],
   "scripts": {
-    "awc:build": "npm run build --workspace games/arabic-word-challenge",
-    "awc:dev": "npm run dev --workspace games/arabic-word-challenge",
-    "awc:test": "npm run test --workspace games/arabic-word-challenge",
     "build": "tsc -b && vite build",
     "dev": "vite",
     "emulator": "firebase emulators:start --project demo-family-game-center",
     "preview": "vite preview",
     "rules:test": "firebase emulators:exec --only firestore --project demo-family-game-center \"vitest run --config vitest.rules.config.ts\"",
     "test": "vitest run",
-    "test:all": "npm run test && npm run rules:test && npm run awc:test",
+    "test:all": "npm run test && npm run rules:test",
     "typecheck": "tsc -b --force"
   },
   "devDependencies": {

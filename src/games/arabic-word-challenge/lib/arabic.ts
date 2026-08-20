@@ -35,7 +35,11 @@ export function shuffleLetters(word: string): string[] {
     const a = [...src];
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+      // i و j داخل المدى دائمًا (0 <= j <= i < a.length)، لكن
+      // noUncheckedIndexedAccess لا يستطيع إثبات ذلك.
+      const swap = a[i]!;
+      a[i] = a[j]!;
+      a[j] = swap;
     }
     if (a.join("") !== word) return a;
   }

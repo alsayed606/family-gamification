@@ -21,9 +21,9 @@
    أو اختر الملفات والمجلدات:
    ```
    ✅ src/
-   ✅ data/
    ✅ config/
    ✅ docs/
+   ✅ tests/
    ✅ README.md
    ```
 3. في **Commit message** اكتب:
@@ -72,9 +72,8 @@ git push -u origin main
 
 الآن تستطيع الوصول من أي مكان:
 
-```
-https://YOUR_USERNAME.github.io/family-gamification/src/html/
-```
+> ⚠️ مسار النشر تغيّر: التطبيق صار يُبنى إلى `dist/`، ولم يعد يُخدَم
+> من `src/html/`. تُضبط الاستضافة في الخطوة 8.
 
 ---
 
@@ -84,7 +83,7 @@ https://YOUR_USERNAME.github.io/family-gamification/src/html/
 
 ```bash
 # 1. عدّل الملفات محليًا
-nano src/js/screens.js
+nano src/screens/Hub.tsx
 
 # 2. Commit والـ push
 git add .
@@ -132,11 +131,7 @@ Firestore وعلى الخادم — لا في المتصفح.
 
 ### "404 Not Found"
 
-✅ الحل:
-- الرابط الصحيح:
-  ```
-  https://YOUR_USERNAME.github.io/family-gamification/src/html/
-  ```
+✅ الحل: راجع إعداد النشر في الخطوة 8 — التطبيق يُبنى إلى `dist/`.
 
 ### "الملفات ما اتحمّلت"
 

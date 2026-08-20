@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ملاحظة: خطوط اللعبة (Aref Ruqaa و Tajawal) تُحمَّل من App.tsx لا بـ @import.
+   Vite يسبق تحميل CSS الحزم الكسولة وينتظره، فأي فشل في @import — مانع
+   إعلانات، انقطاع، أو شبكة تحجب Google Fonts — كان يُسقط مسار اللعبة كاملًا.
+   البدائل المحدَّدة في font-family أدناه تكفي للعرض. */
 
 
 .awc{

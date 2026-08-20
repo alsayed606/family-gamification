@@ -21,9 +21,7 @@ export const GAMES: Game[] = [
     name: "تحدي الكلمات العربية",
     icon: "🔤",
     desc: "فريقان، حروف مبعثرة، وجرس — من يستخرج الكلمة أولاً؟",
-    // يصبح مسارًا داخليًا (/games/arabic-word-challenge) في الخطوة 7.
-    to: "./games/arabic-word-challenge/dist/index.html",
-    external: true,
+    to: "/games/arabic-word-challenge",
   },
   {
     id: "tasks",

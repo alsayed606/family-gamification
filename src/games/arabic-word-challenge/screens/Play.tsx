@@ -8,11 +8,12 @@ type PlayProps = {
   settings: Settings;
   sound: boolean;
   setSound: (v: boolean) => void;
-  openAdmin: () => void;
+  openAdmin?: (() => void) | undefined;
+  onExit: () => void;
   toggleFullscreen: () => void;
 };
 
-export function Play({ engine, settings, sound, setSound, openAdmin, toggleFullscreen }: PlayProps) {
+export function Play({ engine, settings, sound, setSound, openAdmin, onExit, toggleFullscreen }: PlayProps) {
   const {
     teams,
     round,
@@ -137,8 +138,13 @@ export function Play({ engine, settings, sound, setSound, openAdmin, toggleFulls
           <button className="btn btn-ghost" onClick={skipRound}>
             تخطي الجولة
           </button>
-          <button className="btn btn-ghost" onClick={openAdmin}>
-            لوحة المشرف
+          {openAdmin && (
+            <button className="btn btn-ghost" onClick={openAdmin}>
+              لوحة المشرف
+            </button>
+          )}
+          <button className="btn btn-ghost" onClick={onExit}>
+            ← الألعاب
           </button>
           <button className="btn btn-ghost" onClick={toggleFullscreen}>
             ملء الشاشة

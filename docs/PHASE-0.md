@@ -30,7 +30,7 @@
   ويعرض تحذيرًا واضحًا إن لم يُضبط.
 - استُبدلت `config/firestore.rules` بقاعدة **رفض شامل**.
 - نُظّف التوثيق كاملًا من بيانات الاعتماد ومن الإرشادات الميتة
-  (`README.md`, `docs/SETUP.md`, `docs/README-AR.md`, `docs/GITHUB-UPLOAD.md`,
+  (`README.md`, `docs/SETUP.md`, `docs/GITHUB-UPLOAD.md`,
   `config/firebase-config.md`, `DEPLOY.bat`).
 
 **الأثر:** الشاشات المعتمدة على Firestore (المهام، الترتيب، الإدارة) معطّلة

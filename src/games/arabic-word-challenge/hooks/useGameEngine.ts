@@ -69,16 +69,17 @@ export function useGameEngine(opts: {
 
   const startMatch = useCallback(
     (playable: Word[]) => {
-      if (playable.length === 0) return;
       const shuffled = [...playable].sort(() => Math.random() - 0.5);
       const picked = shuffled.slice(0, settingsRef.current.rounds);
+      const first = picked[0];
+      if (!first) return; // بنك فارغ: لا مباراة
       setPool(picked);
       setTeams((t) => [
         { ...t[0], score: 0, correct: 0 },
         { ...t[1], score: 0, correct: 0 },
       ]);
       setRound(1);
-      loadRound(picked[0]);
+      loadRound(first);
     },
     [loadRound]
   );
@@ -158,10 +159,14 @@ export function useGameEngine(opts: {
   useEffect(() => {
     if (phase !== "resolved") return;
     const t = setTimeout(() => {
-      if (roundRef.current >= settingsRef.current.rounds) {
+      // نفاد القرعة يُنهي المباراة كما ينهيها بلوغ عدد الجولات. القرعة
+      // قد تكون أقصر من عدد الجولات إذا كان البنك المفعّل أصغر منه
+      // (مثلًا مجال واحد صغير مع 30 جولة) — وبدون هذا الفحص يُقرأ عنصر
+      // خارج المصفوفة فتنهار اللعبة في منتصفها.
+      const nextWord = poolRef.current[roundRef.current];
+      if (roundRef.current >= settingsRef.current.rounds || !nextWord) {
         finishMatch();
       } else {
-        const nextWord = poolRef.current[roundRef.current];
         setRound((r) => r + 1);
         loadRound(nextWord);
       }

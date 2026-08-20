@@ -9,9 +9,50 @@ import { useWordBank } from "./hooks/useWordBank";
 import { useGameEngine } from "./hooks/useGameEngine";
 import { download } from "./lib/download";
 
+import "./styles.css";
+
 type Screen = "home" | "play" | "results";
 
-export default function App() {
+export type ArabicWordChallengeProps = {
+  /**
+   * هل يملك المستخدم صلاحية إدارة محتوى اللعبة (بنك الكلمات والإعدادات)؟
+   *
+   * ⚠️ حاجز تجربة لا حاجز أمني: بنك الكلمات في localStorage على هذا الجهاز،
+   * وأي شخص يفتح أدوات المطوّر يعدّله. الغرض أن يمنع طفلًا من العبث ببنك
+   * الكلمات على شاشة الاستضافة المشتركة، لا أن يحمي بيانات.
+   * يصبح حاجزًا حقيقيًا حين ينتقل البنك إلى Firestore.
+   */
+  canManage: boolean;
+  /** العودة إلى قائمة الألعاب. */
+  onExit: () => void;
+};
+
+const FONTS_HREF =
+  "https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700" +
+  "&family=Tajawal:wght@400;500;700;800&display=swap";
+
+/**
+ * يحمّل خطوط اللعبة عند فتحها فقط، وبلا أن يتوقّف عليها شيء.
+ *
+ * لا تُستورد بـ @import داخل styles.css: فيت يسبق تحميل CSS الحزم الكسولة
+ * وينتظر نجاحه، فكان فشل طلب الخطوط (مانع إعلانات أو شبكة تحجب Google
+ * Fonts) يُسقط مسار اللعبة كاملًا برسالة خطأ. هنا فشل الطلب لا يفعل شيئًا:
+ * تعمل اللعبة بالخطوط البديلة.
+ */
+function useGameFonts() {
+  useEffect(() => {
+    if (document.querySelector(`link[data-awc-fonts]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = FONTS_HREF;
+    link.setAttribute("data-awc-fonts", "");
+    document.head.appendChild(link);
+  }, []);
+}
+
+export default function App({ canManage, onExit }: ArabicWordChallengeProps) {
+  useGameFonts();
+
   const [screen, setScreen] = useState<Screen>("home");
   const [sound, setSound] = useState(true);
   const [admin, setAdmin] = useState(false);
@@ -90,7 +131,8 @@ export default function App() {
           catCount={catCount}
           sound={sound}
           setSound={setSound}
-          openAdmin={() => setAdmin(true)}
+          openAdmin={canManage ? () => setAdmin(true) : undefined}
+          onExit={onExit}
           ready={ready}
           historyCount={history.length}
         />
@@ -102,7 +144,8 @@ export default function App() {
           settings={settings}
           sound={sound}
           setSound={setSound}
-          openAdmin={() => setAdmin(true)}
+          openAdmin={canManage ? () => setAdmin(true) : undefined}
+          onExit={onExit}
           toggleFullscreen={toggleFullscreen}
         />
       )}

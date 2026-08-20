@@ -5,8 +5,8 @@ import {
   applyScoreAdjustment,
   isAnswerCorrect,
   isRoundExhausted,
-} from "../src/lib/roundLogic";
-import type { Team } from "../src/types";
+} from "../../../src/games/arabic-word-challenge/lib/roundLogic";
+import type { Team } from "../../../src/games/arabic-word-challenge/types";
 
 const teams = (): [Team, Team] => [
   { name: "الأزرق", score: 10, correct: 2 },

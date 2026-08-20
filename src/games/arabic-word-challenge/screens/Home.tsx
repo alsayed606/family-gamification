@@ -10,7 +10,8 @@ type HomeProps = {
   catCount: number;
   sound: boolean;
   setSound: (v: boolean) => void;
-  openAdmin: () => void;
+  openAdmin?: (() => void) | undefined;
+  onExit: () => void;
   ready: boolean;
   historyCount: number;
 };
@@ -25,6 +26,7 @@ export function Home({
   sound,
   setSound,
   openAdmin,
+  onExit,
   ready,
   historyCount,
 }: HomeProps) {
@@ -102,9 +104,14 @@ export function Home({
       </ul>
 
       <div className="home-tools">
-        <button className="btn btn-ghost" onClick={openAdmin}>
-          لوحة المشرف
+        <button className="btn btn-ghost" onClick={onExit}>
+          ← الألعاب
         </button>
+        {openAdmin && (
+          <button className="btn btn-ghost" onClick={openAdmin}>
+            لوحة المشرف
+          </button>
+        )}
         <button className="btn btn-ghost" onClick={() => setSound(!sound)}>
           {sound ? "كتم الصوت" : "تشغيل الصوت"}
         </button>
