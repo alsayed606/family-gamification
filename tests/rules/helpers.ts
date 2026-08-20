@@ -3,8 +3,15 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import {
   initializeTestEnvironment,
+  type RulesTestContext,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
+
+/**
+ * نشتقّ النوع من المكتبة بدل استيراد Firestore المعياري: ctx.firestore()
+ * يُرجع نسخة compat تعمل مع الدوال المعيارية وقت التشغيل لكن نوعها مختلف.
+ */
+type TestFirestore = ReturnType<RulesTestContext["firestore"]>;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "../..");
@@ -57,7 +64,7 @@ export function userDoc(overrides: Record<string, unknown> = {}) {
  */
 export async function seed(
   env: RulesTestEnvironment,
-  writes: (db: FirebaseFirestore.Firestore | any) => Promise<void>
+  writes: (db: TestFirestore) => Promise<void>
 ) {
   await env.withSecurityRulesDisabled(async (ctx) => {
     await writes(ctx.firestore());

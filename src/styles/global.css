@@ -1,0 +1,175 @@
+/* ============================================================
+   global.css — Dark Gaming UI / RTL / Mobile First
+   منقول من نسخة Vanilla السابقة مع الحفاظ على الهوية البصرية،
+   ومقصور على ما يستخدمه هيكل الخطوة 3 فعلًا.
+   ============================================================ */
+
+:root {
+  --bg:        #0a0e1a;
+  --bg-2:      #111726;
+  --card:      rgba(255, 255, 255, 0.04);
+  --card-brd:  rgba(255, 255, 255, 0.08);
+  --txt:       #e8edf7;
+  --muted:     #8b93a7;
+
+  --neon:      #00e5ff;
+  --neon-2:    #7c3aed;
+  --gold:      #ffce4d;
+  --ok:        #36e07f;
+  --danger:    #ff5470;
+
+  --radius: 18px;
+  --glow: 0 0 18px rgba(0, 229, 255, 0.45);
+  --tap: 0.12s ease;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { margin: 0; min-height: 100%; }
+
+body {
+  font-family: "Cairo", system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(0, 229, 255, 0.14), transparent 55%),
+    var(--bg);
+  color: var(--txt);
+  overflow-x: hidden;
+}
+
+:focus-visible { outline: 3px solid var(--neon); outline-offset: 3px; border-radius: 8px; }
+
+.muted { color: var(--muted); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+
+/* ── التخطيط ─────────────────────────────────────────────── */
+
+.page { min-height: 100dvh; }
+.wrap { padding: 16px; max-width: 900px; margin: 0 auto; }
+
+.center-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.section-title { font-weight: 900; margin: 4px 2px 14px; font-size: 18px; }
+
+/* ── البطاقات ────────────────────────────────────────────── */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-brd);
+  border-radius: var(--radius);
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+.card.narrow { width: 100%; max-width: 380px; display: grid; gap: 12px; justify-items: center; }
+.card h2 { margin: 0; }
+.card p { margin: 0; }
+
+/* ── الشريط العلوي ───────────────────────────────────────── */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-brd);
+}
+.tb-user { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tb-user strong { display: block; }
+.tb-avatar { font-size: 30px; }
+.tb-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── شبكة الألعاب ────────────────────────────────────────── */
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.hub-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--card-brd);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: transform var(--tap), box-shadow var(--tap), border-color var(--tap);
+}
+.hub-card:hover { border-color: var(--neon); box-shadow: var(--glow); transform: translateY(-2px); }
+.hub-card:active { transform: scale(0.98); }
+.hub-card h3 { margin: 10px 0 6px; font-weight: 800; }
+.hub-card p { margin: 0; font-size: 13px; }
+.hub-icon { font-size: 38px; line-height: 1; }
+
+.hub-card.is-disabled { opacity: 0.5; cursor: not-allowed; }
+.hub-card.is-disabled:hover { border-color: var(--card-brd); box-shadow: none; transform: none; }
+
+/* ── الأزرار ─────────────────────────────────────────────── */
+
+.btn, .btn-ghost {
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform var(--tap);
+}
+.btn {
+  background: linear-gradient(135deg, var(--neon), var(--neon-2));
+  color: #06121a;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: var(--glow);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--card-brd);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 13px;
+}
+.btn:active, .btn-ghost:active { transform: scale(0.96); }
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-brd);
+  color: var(--gold);
+}
+
+/* ── مؤشّر التحميل ───────────────────────────────────────── */
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--card-brd);
+  border-top-color: var(--neon);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

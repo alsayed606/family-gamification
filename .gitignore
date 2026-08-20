@@ -20,8 +20,7 @@ npm-debug.log*
 .env.local
 *.secret
 
-# إعدادات Firebase المحلية (كل مطوّر يضبط مشروعه)
-src/js/firebase-config.local.js
+# إعدادات Firebase المحلية (كل مطوّر يضبط مشروعه في .env.local أعلاه)
 .firebaserc
 
 # Build output — ignored by default, EXCEPT games/*/dist which is committed
