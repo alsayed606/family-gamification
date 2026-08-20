@@ -56,14 +56,10 @@ npm run rules:test  # 40 اختبار قواعد على المحاكي
 
 ---
 
-## 4. النشر على GitHub Pages
+## 4. النشر
 
-- **Settings** → **Pages** → Branch: `main` / `(root)` → **Save**
-- الرابط يُضبط في الخطوة 8 (النشر) — الناتج في `dist/` لا في جذر المستودع.
-
-> GitHub Pages تخدم ملفات ثابتة فقط — وهذا يكفي: التطبيق كلّه من طرف
-> العميل، ولا Cloud Functions في المرحلة 1. لذلك اختير HashRouter، فلا
-> تحتاج إعادة كتابة المسارات على الخادم.
+يبني GitHub Actions التطبيق وينشره تلقائيًا على GitHub Pages عند كل دفعة
+إلى `main`. الإعداد لمرة واحدة موصوف في **`docs/DEPLOY.md`**.
 
 ---
 
@@ -85,6 +81,7 @@ npm run rules:test  # 40 اختبار قواعد على المحاكي
 | الملف | الغرض |
 |---|---|
 | `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
+| `docs/DEPLOY.md` | النشر وإعداده |
 | `config/firestore.rules` | قواعد الأمان |
 | `config/firebase-config.md` | نموذج البيانات والإعدادات |
 | `src/lib/games.ts` | سجلّ الألعاب في الـ Hub |

@@ -1,0 +1,78 @@
+name: Build and deploy to GitHub Pages
+
+# يُبنى التطبيق في CI ويُنشر ناتج dist/. لا يُرفع أي ناتج بناء إلى git،
+# فلا يمكن أن يفترق المنشور عن المصدر.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# نشرة واحدة في كل مرة؛ الدفعات المتلاحقة تُلغي الأقدم بدل التسابق.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: فحص الأنواع
+        run: npm run typecheck
+
+      - name: اختبارات الوحدة
+        run: npm test
+
+      # قواعد الأمان هي الحدّ الوحيد في نظام بلا خادم، فتُختبر في كل دفعة.
+      # المحاكي يحتاج Java، وهي مثبّتة مسبقًا على ubuntu-latest.
+      - name: اختبارات قواعد Firestore
+        run: npm run rules:test
+
+      - name: البناء
+        env:
+          # إعدادات Firebase للويب ليست أسرارًا — تُرسل للمتصفح بالضرورة،
+          # ولذلك تُخزَّن كـ Variables لا Secrets. الحدّ الأمني هو قواعد
+          # Firestore، لا إخفاء هذه القيم.
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+        run: npm run build
+
+      - name: تنبيه إن لم تُضبط الإعدادات
+        if: ${{ vars.VITE_FIREBASE_PROJECT_ID == '' }}
+        run: |
+          echo "::warning::لم تُضبط متغيّرات VITE_FIREBASE_* في إعدادات المستودع."
+          echo "سيُنشر الموقع لكنه سيعرض شاشة «تعذّر تشغيل التطبيق»."
+          echo "اضبطها من: Settings ← Secrets and variables ← Actions ← Variables"
+          echo "راجع docs/DEPLOY.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -25,13 +25,14 @@
 - أُزيل مدخل "دخول الإدارة" من `app.js` و`index.html` (كان بابًا خلفيًا).
 - حُذف `data/seed.html` كاملًا (كان يحوي رموز PIN وإعدادات المشروع المشترك،
   ونموذجه ملغى أصلًا).
-- فُصل `src/js/firebase-config.js` عن مشروع `marine-command-center`؛ صار
-  يقرأ الإعدادات من `src/js/firebase-config.local.js` المستثنى من git،
-  ويعرض تحذيرًا واضحًا إن لم يُضبط.
+- فُصل تطبيق العائلة عن مشروع `marine-command-center` نهائيًا.
+  > سجلّ تاريخي: تمّ الفصل وقتها عبر `src/js/firebase-config.local.js`.
+  > **تجاوزته الخطوة 3** — الإعدادات الآن في `.env.local` بصيغة Vite،
+  > وملفات Vanilla تلك محذوفة. راجع `.env.example`.
 - استُبدلت `config/firestore.rules` بقاعدة **رفض شامل**.
 - نُظّف التوثيق كاملًا من بيانات الاعتماد ومن الإرشادات الميتة
-  (`README.md`, `docs/SETUP.md`, `docs/GITHUB-UPLOAD.md`,
-  `config/firebase-config.md`, `DEPLOY.bat`).
+  (`README.md`, `docs/SETUP.md`, `config/firebase-config.md`، وأدلّة رفع
+  قديمة حُذفت لاحقًا بعد أن حلّ محلّها `docs/DEPLOY.md`).
 
 **الأثر:** الشاشات المعتمدة على Firestore (المهام، الترتيب، الإدارة) معطّلة
 حتى تُبنى المصادقة في المرحلة 1. **لعبة تحدي الكلمات العربية تعمل كما هي**
@@ -91,8 +92,10 @@ match /{coll}/{docId} {
 **Firebase Console → Add project** (مثلًا `family-game-center`).
 
 - فعّل **Firestore Database** (وضع الإنتاج).
+- فعّل **Authentication ← Sign-in method ← Email/Password**.
 - **Rules** → انسخ `config/firestore.rules` → **Publish**.
-- أضف تطبيق ويب، وانسخ الإعدادات إلى `src/js/firebase-config.local.js`.
+- أضف تطبيق ويب، وانسخ الإعدادات إلى `.env.local` (وإلى متغيّرات
+  المستودع للنشر — راجع `docs/DEPLOY.md`).
 
 لا تربطه بأي مشروع أعمال. القواعد ومفاتيح الخدمة والنسخ الاحتياطي كلها على
 مستوى المشروع — المشاركة تعني أن خطأً في تطبيق العائلة يعرّض بيانات العمل.

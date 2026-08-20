@@ -109,4 +109,5 @@ npm run typecheck  # tsc بلا أخطاء
 | `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
 | `docs/ADMIN.md` | الأدوار وتعيين المدير الأول |
 | `docs/SETUP.md` | خطوات الإعداد التفصيلية |
+| `docs/DEPLOY.md` | النشر على GitHub Pages عبر Actions |
 | `config/firebase-config.md` | نموذج البيانات وإعداد المشروع |
