@@ -126,6 +126,104 @@ service cloud.firestore {
       }
     }
 
+    // ── بنك الأسئلة المشترك ──────────────────────────────────
+    //
+    //  ⚠️ الإجابة غير قابلة للإخفاء. القواعد تعمل على مستوى المستند لا
+    //  الحقل، فمن يقرأ السؤال يقرأ answer معه. البنك صالح لوضع free play
+    //  ولا يقاوم الغش. إخفاؤها يتطلب Cloud Function، أي خطة Blaze.
+    //
+    //  ── نموذج المراجعة ──
+    //  العضو يقترح (DRAFT باسمه)، والمدير وحده ينشر. فيبقى ما يراه
+    //  الجميع مسؤولية المدير، مع بقاء المساهمة مفتوحة.
+    //
+    //  ── القواعد ليست مرشِّحات ──
+    //  في استعلامات list يجب أن تثبت قيود الاستعلام نفسها أن كل نتيجة
+    //  مسموحة. فاستعلام العضو لازمه where('status','==','PUBLISHED')
+    //  أو where('createdBy','==',uid) وإلا رُفض كاملًا — لا مقصوصًا.
+
+    match /questions/{questionId} {
+
+      function isActiveMember() {
+        return isVerified()
+          && callerExists()
+          && callerDoc().status == 'ACTIVE';
+      }
+
+      function isValidType(t) {
+        return t == 'MCQ' || t == 'TRUE_FALSE' || t == 'WORD_SCRAMBLE';
+      }
+
+      function isValidDifficulty(d) {
+        return d == 'EASY' || d == 'MEDIUM' || d == 'HARD';
+      }
+
+      function isText(s, maxLen) {
+        return s is string && s.size() > 0 && s.size() <= maxLen;
+      }
+
+      // شكل الخيارات والإجابة بحسب النوع. الثابت الجوهري في نوعَي
+      // الاختيار: الإجابة أحد الخيارات — فيستحيل سؤال بلا إجابة صحيحة.
+      function isValidShape(d) {
+        return (
+          d.type == 'WORD_SCRAMBLE'
+            ? !('choices' in d)
+            : d.choices is list
+              && d.choices.size() >= 2
+              && d.choices.size() <= 6
+              && d.answer in d.choices
+              && (d.type != 'TRUE_FALSE' || d.choices == ['صح', 'خطأ'])
+        );
+      }
+
+      function isValidQuestion(d) {
+        return isValidType(d.type)
+          && isText(d.prompt, 300)
+          && isText(d.answer, 120)
+          && isText(d.category, 40)
+          && isValidDifficulty(d.difficulty)
+          && isValidShape(d);
+      }
+
+      // المنشور لكل عضو فعّال؛ والمسوّدة لصاحبها؛ والمدير يرى الكل.
+      allow read: if isActiveMember() && (
+        resource.data.status == 'PUBLISHED'
+        || resource.data.createdBy == request.auth.uid
+        || isAdmin()
+      );
+
+      // العضو يقترح مسوّدة باسمه فقط. المدير ينشئ منشورًا مباشرة.
+      // تثبيت createdBy على المنادي يمنع نسبة الاقتراح لغيره.
+      allow create: if isActiveMember()
+        && request.resource.data.createdBy == request.auth.uid
+        && isValidQuestion(request.resource.data)
+        && (
+          request.resource.data.status == 'DRAFT'
+          || (request.resource.data.status == 'PUBLISHED' && isAdmin())
+        );
+
+      // صاحب المسوّدة يعدّلها ما دامت مسوّدة. لا يملك نشرها،
+      // ولا يمسّ منشورًا — حتى لو كان هو من اقترحه.
+      allow update: if isActiveMember()
+        && resource.data.createdBy == request.auth.uid
+        && resource.data.status == 'DRAFT'
+        && request.resource.data.status == 'DRAFT'
+        && request.resource.data.createdBy == resource.data.createdBy
+        && isValidQuestion(request.resource.data);
+
+      // المدير يراجع وينشر ويسحب — ولا ينسب السؤال لغير مُنشئه.
+      allow update: if isAdmin()
+        && request.resource.data.createdBy == resource.data.createdBy
+        && (request.resource.data.status == 'DRAFT'
+            || request.resource.data.status == 'PUBLISHED')
+        && isValidQuestion(request.resource.data);
+
+      // الحذف للمدير، ولصاحب المسوّدة قبل نشرها.
+      allow delete: if isAdmin()
+        || (isActiveMember()
+            && resource.data.createdBy == request.auth.uid
+            && resource.data.status == 'DRAFT');
+    }
+
     // ── كل ما عدا ذلك ────────────────────────────────────────
     // أي مجموعة بلا قاعدة allow صريحة مرفوضة تلقائيًا. هذا البلوك
     // توثيق صريح للنيّة، ولا يمنح شيئًا.
