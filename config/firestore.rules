@@ -163,10 +163,11 @@ service cloud.firestore {
 
       // شكل الخيارات والإجابة بحسب النوع. الثابت الجوهري في نوعَي
       // الاختيار: الإجابة أحد الخيارات — فيستحيل سؤال بلا إجابة صحيحة.
+      // كلمة من حرفين لا تُبعثر بصورة ذات معنى، فالحدّ الأدنى ثلاثة.
       function isValidShape(d) {
         return (
           d.type == 'WORD_SCRAMBLE'
-            ? !('choices' in d)
+            ? !('choices' in d) && d.answer.size() >= 3
             : d.choices is list
               && d.choices.size() >= 2
               && d.choices.size() <= 6

@@ -8,6 +8,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -242,6 +243,14 @@ describe("سلامة السؤال مفروضة في القواعد", () => {
     );
   });
 
+  it("يرفض كلمة مبعثرة أقصر من ثلاثة أحرف", async () => {
+    const db = verified(env, MEMBER_UID);
+    const { choices: _drop, ...rest } = questionDoc({
+      type: "WORD_SCRAMBLE", answer: "من", createdBy: MEMBER_UID,
+    });
+    await assertFails(addDoc(collection(db, "questions"), rest));
+  });
+
   it("يرفض حالة غير معروفة", async () => {
     const db = verified(env, MEMBER_UID);
     await assertFails(
@@ -366,6 +375,26 @@ describe("المسار الصحيح", () => {
       type: "WORD_SCRAMBLE", answer: "مدرسة", createdBy: MEMBER_UID,
     });
     await assertSucceeds(addDoc(collection(db, "questions"), rest));
+  });
+
+  // يوثّق سبب deleteField في src/lib/questions.ts: updateDoc يدمج ولا
+  // يحذف، فتحويل سؤال اختيار إلى كلمة مبعثرة يترك choices القديمة
+  // ويسقط التعديل. الحذف الصريح هو ما يجعله يمرّ.
+  it("التحويل إلى كلمة مبعثرة يفشل ما لم تُحذف الخيارات صراحةً", async () => {
+    const db = verified(env, MEMBER_UID);
+    await assertFails(
+      updateDoc(doc(db, "questions", MY_DRAFT), {
+        type: "WORD_SCRAMBLE",
+        answer: "مدرسة",
+      })
+    );
+    await assertSucceeds(
+      updateDoc(doc(db, "questions", MY_DRAFT), {
+        type: "WORD_SCRAMBLE",
+        answer: "مدرسة",
+        choices: deleteField(),
+      })
+    );
   });
 
   it("يقبل صح/خطأ بالخيارين المثبَّتين", async () => {
