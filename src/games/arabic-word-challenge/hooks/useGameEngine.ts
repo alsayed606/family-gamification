@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { shuffleLetters } from "../lib/arabic";
+import { shuffleLetters } from "../../../lib/arabic";
 import {
   addLockout,
   applyCorrectAnswer,

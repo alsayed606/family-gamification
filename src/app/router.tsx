@@ -10,7 +10,10 @@ import { Account } from "../screens/Account";
 import { Admin } from "../screens/Admin";
 import { QuestionBank } from "../screens/QuestionBank";
 import { Suspended } from "../screens/Suspended";
-import { ArabicWordChallengeRoute } from "../screens/GameRoute";
+import {
+  ArabicWordChallengeRoute,
+  FamilyQuizRoute,
+} from "../screens/GameRoute";
 import { Login } from "../screens/Login";
 import { Register } from "../screens/Register";
 import { Verify } from "../screens/Verify";
@@ -64,6 +67,7 @@ export const router = createHashRouter([
             path: "/games/arabic-word-challenge",
             element: <ArabicWordChallengeRoute />,
           },
+          { path: "/games/family-quiz", element: <FamilyQuizRoute /> },
         ],
       },
 
