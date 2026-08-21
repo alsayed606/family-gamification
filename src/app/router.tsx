@@ -8,8 +8,12 @@ import {
 import { Hub } from "../screens/Hub";
 import { Account } from "../screens/Account";
 import { Admin } from "../screens/Admin";
+import { QuestionBank } from "../screens/QuestionBank";
 import { Suspended } from "../screens/Suspended";
-import { ArabicWordChallengeRoute } from "../screens/GameRoute";
+import {
+  ArabicWordChallengeRoute,
+  FamilyQuizRoute,
+} from "../screens/GameRoute";
 import { Login } from "../screens/Login";
 import { Register } from "../screens/Register";
 import { Verify } from "../screens/Verify";
@@ -57,10 +61,13 @@ export const router = createHashRouter([
         children: [
           { path: "/hub", element: <Hub /> },
           { path: "/account", element: <Account /> },
+          // البنك مشترك بين الألعاب، فمكانه خارج /games/* عمدًا.
+          { path: "/questions", element: <QuestionBank /> },
           {
             path: "/games/arabic-word-challenge",
             element: <ArabicWordChallengeRoute />,
           },
+          { path: "/games/family-quiz", element: <FamilyQuizRoute /> },
         ],
       },
 

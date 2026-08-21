@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AR_ONLY, countLetters } from "../lib/arabic";
+import { AR_ONLY, countLetters } from "../../../lib/arabic";
 import { STORAGE_KEYS, store } from "../lib/storage";
 import { DEFAULT_WORDS } from "../data/words";
 import type { Category, MatchRecord, Word } from "../types";

@@ -1,6 +1,6 @@
 // منطق الجولة الصرف (بلا React) — قابل للاختبار مباشرة.
 
-import { normalize } from "./arabic";
+import { normalize } from "../../../lib/arabic";
 import type { Team, TeamIndex } from "../types";
 
 /** يضيف فريقاً لقائمة "خارج المحاولة" لهذه الجولة بلا تكرار. */

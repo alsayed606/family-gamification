@@ -24,6 +24,13 @@ export const GAMES: Game[] = [
     to: "/games/arabic-word-challenge",
   },
   {
+    id: "family-quiz",
+    name: "مسابقة العائلة",
+    icon: "❓",
+    desc: "أسئلة من بنك الأسئلة المشترك، وفريقان يتناوبان الإجابة.",
+    to: "/games/family-quiz",
+  },
+  {
     id: "tasks",
     name: "المهام والمكافآت",
     icon: "🎯",

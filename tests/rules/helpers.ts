@@ -58,6 +58,21 @@ export function userDoc(overrides: Record<string, unknown> = {}) {
   };
 }
 
+/** سؤال صالح — تُبنى الحالات السالبة بإفساد حقل واحد منه. */
+export function questionDoc(overrides: Record<string, unknown> = {}) {
+  return {
+    type: "MCQ",
+    prompt: "ما عاصمة المملكة العربية السعودية؟",
+    choices: ["الرياض", "جدة", "الدمام"],
+    answer: "الرياض",
+    category: "جغرافيا",
+    difficulty: "EASY",
+    status: "DRAFT",
+    createdBy: MEMBER_UID,
+    ...overrides,
+  };
+}
+
 /**
  * يزرع البيانات متجاوزًا القواعد — للتحضير فقط، لا للتأكيد.
  * يحاكي ما يفعله Firebase Console عند تمهيد المدير الأول.

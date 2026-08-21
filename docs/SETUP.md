@@ -38,8 +38,8 @@ npm run dev                  # طرفية ثانية → http://localhost:5173
 لا يحتاج بناءً منفصلًا.
 
 ```bash
-npm test            # 62 اختبار وحدة
-npm run rules:test  # 40 اختبار قواعد على المحاكي
+npm test            # 101 اختبار وحدة
+npm run rules:test  # 80 اختبار قواعد على المحاكي
 ```
 
 ---
@@ -81,8 +81,11 @@ npm run rules:test  # 40 اختبار قواعد على المحاكي
 | الملف | الغرض |
 |---|---|
 | `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
+| `docs/PHASE-2.md` | بنك الأسئلة المشترك وقيوده |
 | `docs/DEPLOY.md` | النشر وإعداده |
 | `config/firestore.rules` | قواعد الأمان |
 | `config/firebase-config.md` | نموذج البيانات والإعدادات |
 | `src/lib/games.ts` | سجلّ الألعاب في الـ Hub |
-| `src/games/arabic-word-challenge/` | لعبة الكلمات (مسار كسول) |
+| `src/lib/questions.ts` | قراءة البنك المشترك وكتابته |
+| `src/games/arabic-word-challenge/` | لعبة الكلمات (بنك خاص بها) |
+| `src/games/family-quiz/` | مسابقة تقرأ من البنك المشترك |

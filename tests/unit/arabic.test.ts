@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AR_ONLY, countLetters, normalize, shuffleLetters } from "../../../src/games/arabic-word-challenge/lib/arabic";
+import { AR_ONLY, countLetters, normalize, shuffleLetters } from "../../src/lib/arabic";
 
 describe("normalize", () => {
   it("removes tashkeel and tatweel", () => {

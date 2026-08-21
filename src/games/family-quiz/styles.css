@@ -1,0 +1,86 @@
+/* مسابقة العائلة — تمتدّ على متغيّرات global.css ولا تعيد تعريف الهوية.
+   ⚠️ لا @import لخطوط خارجية هنا: فيت يسبق تحميل CSS الحزم الكسولة
+   وينتظره، فيُسقط فشلُ الطلب مسارَ اللعبة كاملًا. */
+
+.quiz .quiz-scores {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quiz-team {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  min-width: 120px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--card-brd);
+  background: var(--card);
+}
+.quiz-team span { font-size: 24px; font-weight: 900; color: var(--muted); }
+/* دور الفريق الحالي واضح: بلا ذلك ينسى اللاعبون من يجيب. */
+.quiz-team.is-turn { border-color: var(--neon); box-shadow: var(--glow); }
+.quiz-team.is-turn span { color: var(--neon); }
+
+.quiz-prompt { margin: 0; font-size: 22px; line-height: 1.6; }
+
+.quiz-choices { display: grid; gap: 10px; }
+
+.quiz-choice {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--card-brd);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: start;
+}
+.quiz-choice:hover:not(:disabled) { border-color: var(--neon); }
+.quiz-choice:disabled { cursor: default; }
+/* الصحيح والخاطئ يُميَّزان بالحدّ واللون معًا لا باللون وحده. */
+.quiz-choice.is-right {
+  border-color: var(--ok, #29e39a);
+  color: var(--ok, #29e39a);
+  border-width: 2px;
+}
+.quiz-choice.is-wrong {
+  border-color: var(--danger);
+  color: #ffb3c0;
+  border-width: 2px;
+}
+
+.quiz-letters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+.quiz-letter {
+  display: grid;
+  place-items: center;
+  min-width: 46px;
+  height: 54px;
+  padding: 0 8px;
+  border-radius: 12px;
+  border: 1px solid var(--card-brd);
+  background: var(--bg-2);
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.quiz-teams { display: grid; gap: 8px; }
+.quiz-teams input {
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--txt);
+  border: 1px solid var(--card-brd);
+  border-radius: 12px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.quiz-empty, .quiz-results { text-align: center; }
+.quiz-results h2 { margin: 0; font-size: 26px; }

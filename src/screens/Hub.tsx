@@ -35,6 +35,9 @@ export function Hub() {
               لوحة التحكم
             </Link>
           )}
+          <Link className="btn-ghost" to="/questions">
+            بنك الأسئلة
+          </Link>
           <Link className="btn-ghost" to="/account">
             حسابي
           </Link>

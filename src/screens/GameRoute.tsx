@@ -9,6 +9,8 @@ const ArabicWordChallenge = lazy(
   () => import("../games/arabic-word-challenge/App")
 );
 
+const FamilyQuiz = lazy(() => import("../games/family-quiz/App"));
+
 export function ArabicWordChallengeRoute() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -19,6 +21,16 @@ export function ArabicWordChallengeRoute() {
         canManage={isAdmin}
         onExit={() => navigate("/hub")}
       />
+    </Suspense>
+  );
+}
+
+export function FamilyQuizRoute() {
+  const navigate = useNavigate();
+
+  return (
+    <Suspense fallback={<Spinner label="جارٍ تحميل اللعبة…" />}>
+      <FamilyQuiz onExit={() => navigate("/hub")} />
     </Suspense>
   );
 }
