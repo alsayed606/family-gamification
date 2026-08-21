@@ -2,8 +2,9 @@
 
 > منصّة ألعاب لمركز واحد: مدير واحد، عدة عائلات وأصدقاء، وواجهة عربية RTL.
 
-**المرحلة الحالية:** المرحلة 1 — مصادقة حقيقية وأدوار وألعاب في وضع
-**free play** (بلا نقاط رسمية). راجع `docs/PHASE-0.md` قبل أي تشغيل.
+**المرحلة الحالية:** المرحلة 2 — بنك أسئلة مشترك تقرأ منه الألعاب، فوق
+مصادقة وأدوار من المرحلة 1. الألعاب في وضع **free play** بلا نقاط رسمية.
+راجع `docs/PHASE-0.md` قبل أي تشغيل.
 
 ---
 
@@ -20,13 +21,15 @@ family-gamification/
 │   ├── main.tsx
 │   ├── app/router.tsx            # HashRouter + الحرّاس
 │   ├── auth/                     # AuthProvider · useAuth · guards · actions
-│   ├── screens/                  # Login · Register · Verify · Reset ·
-│   │                             #   Hub · Account · Admin · Suspended
-│   ├── components/               # Field · Banner · AvatarPicker · Spinner …
-│   ├── hooks/                    # useProfiles · useActiveProfile · useUsers
-│   ├── lib/                      # firebase · validation · authErrors · admin …
+│   ├── screens/                  # Login · Register · Verify · Reset · Hub ·
+│   │                             #   Account · Admin · QuestionBank · Suspended
+│   ├── components/               # Field · Banner · QuestionForm · Spinner …
+│   ├── hooks/                    # useProfiles · useActiveProfile · useUsers ·
+│   │                             #   useQuestions
+│   ├── lib/                      # firebase · questions · arabic · admin …
 │   ├── games/
-│   │   └── arabic-word-challenge/  # لعبة كاملة (674 كلمة، 15 مجالاً)
+│   │   ├── arabic-word-challenge/  # 674 كلمة مدمجة (بنك خاص بها)
+│   │   └── family-quiz/            # تقرأ من بنك الأسئلة المشترك
 │   └── styles/global.css
 ├── config/
 │   ├── firestore.rules           # الحدّ الأمني الحقيقي
@@ -58,8 +61,8 @@ npm run dev                       # طرفية ثانية → http://localhost:5
 ## 🧪 الاختبارات
 
 ```bash
-npm test          # 62 اختبار وحدة (منطق خالص، سريع)
-npm run rules:test # 40 اختبار لقواعد Firestore على المحاكي
+npm test          # 101 اختبار وحدة (منطق خالص، سريع)
+npm run rules:test # 80 اختبار لقواعد Firestore على المحاكي
 npm run test:all   # الاثنان معًا
 npm run typecheck  # tsc بلا أخطاء
 ```
@@ -78,9 +81,15 @@ npm run typecheck  # tsc بلا أخطاء
 | المدير لا يعدّل دور نفسه (وقاية من قفل النظام) | `userId != request.auth.uid` |
 | مستندات المستخدمين غير قابلة للحذف | `allow delete: if false` |
 | ملف الابن بيانات عرض بحتة، بلا أي سلطة | `!('role' in …)` |
+| العضو يقترح سؤالًا ولا ينشره | `status == 'DRAFT'` عند الإنشاء |
+| لا سؤال بلا إجابة صحيحة ضمن خياراته | `answer in choices` |
 
 **الفرض على الخادم لا في المتصفح.** حرّاس المسارات في React تجربة استخدام
 فقط؛ قواعد Firestore هي ما يمنع الوصول فعلًا.
+
+> ⚠️ **الإجابة في بنك الأسئلة مقروءة من المتصفح** — قواعد Firestore على
+> مستوى المستند لا الحقل. البنك للّعب الحرّ ولا يقاوم الغش؛ إخفاء الإجابة
+> يتطلّب خادمًا. التفاصيل في `docs/PHASE-2.md`.
 
 **المدير الأول** يُعيَّن يدويًا مرة واحدة من Firebase Console —
 راجع `docs/ADMIN.md`.
@@ -93,9 +102,15 @@ npm run typecheck  # tsc بلا أخطاء
 2. أضف مسارًا كسولًا في `src/app/router.tsx` (انظر `src/screens/GameRoute.tsx`).
 3. سجّلها في `src/lib/games.ts`.
 
-> إن احتاجت اللعبة بنك أسئلة، اجعله في `src/games/<اللعبة>/data/` أو في
-> مجموعة Firestore مستقلة، بحيث تعيد لعبة أخرى استخدامه بدل تكراره.
->
+**إن احتاجت اللعبة أسئلة، اقرأ من البنك المشترك** بدل أن تحمل نسختها:
+
+```ts
+import { fetchPublishedQuestions } from "../../lib/questions";
+```
+
+انظر `src/games/family-quiz/` نموذجًا، و`docs/PHASE-2.md` للحالات الثلاث
+التي يجب أن تعالجها (بنك فارغ، قرعة أقصر من الجولات، الأنواع الثلاثة).
+
 > ⚠️ لا تضع `@import` لخطوط خارجية داخل CSS اللعبة: فيت يسبق تحميل CSS
 > الحزم الكسولة وينتظره، فيُسقط فشلُ الخطوط مسارَ اللعبة كاملًا. حمّلها
 > من المكوّن كما في `src/games/arabic-word-challenge/App.tsx`.
@@ -107,6 +122,7 @@ npm run typecheck  # tsc بلا أخطاء
 | الملف | المحتوى |
 |---|---|
 | `docs/PHASE-0.md` | الإجراءات الأمنية المطلوبة منك |
+| `docs/PHASE-2.md` | بنك الأسئلة: نموذج المراجعة وقيد انكشاف الإجابة |
 | `docs/ADMIN.md` | الأدوار وتعيين المدير الأول |
 | `docs/SETUP.md` | خطوات الإعداد التفصيلية |
 | `docs/DEPLOY.md` | النشر على GitHub Pages عبر Actions |

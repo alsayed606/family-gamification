@@ -1,55 +1,92 @@
-# إعداد Firebase
+# إعداد Firebase ونموذج البيانات
 
-## ⚠️ المرحلة 0 — ما تغيّر
+## ⚠️ مشروع مخصّص — لا مشترك
 
-كان هذا الملف يحتوي على إعدادات مشروع `marine-command-center` الحقيقية،
-وهو مشروع **مشترك مع أعمال Red Sea Marine**. أُزيلت الإعدادات، وفُصل
-التطبيق عن ذلك المشروع نهائيًا.
+كان هذا الملف يحتوي إعدادات مشروع `marine-command-center` الحقيقية، وهو
+مشروع **مشترك مع أعمال Red Sea Marine**. أُزيلت في المرحلة 0 وفُصل التطبيق
+عن ذلك المشروع نهائيًا.
 
-تطبيق العائلة يجب أن يعمل على **مشروع Firebase مخصّص له وحده**. سبب ذلك
-ليس تنظيميًا فقط: قواعد Firestore ومفاتيح الخدمة و App Check والنسخ
-الاحتياطي كلها على مستوى المشروع، فمشاركة المشروع تعني أن أي خطأ في
-قواعد تطبيق العائلة يعرّض بيانات الأعمال.
+تطبيق العائلة يجب أن يعمل على **مشروع Firebase مخصّص له وحده**. السبب ليس
+تنظيميًا: قواعد Firestore ومفاتيح الخدمة و App Check والنسخ الاحتياطي كلها
+على مستوى المشروع، فمشاركته تعني أن خطأً في قواعد تطبيق العائلة يعرّض بيانات
+العمل.
+
+---
 
 ## الإعداد
 
-1. أنشئ مشروعًا جديدًا في [Firebase Console](https://console.firebase.google.com/)
+1. أنشئ مشروعًا في [Firebase Console](https://console.firebase.google.com/)
    (مثلًا `family-game-center`).
-2. أضف تطبيق ويب واحصل على كائن الإعدادات.
-3. أنشئ `src/js/firebase-config.local.js` (مستثنى من git):
+2. فعّل **Firestore Database** و**Authentication ← Email/Password**.
+3. أضف تطبيق ويب، وانسخ الإعدادات إلى **`.env.local`** بصيغة Vite —
+   انظر `.env.example`. (لا يوجد ملف إعداد JS؛ أُلغي في المرحلة 1.)
+4. **Rules** ← انسخ `config/firestore.rules` ← **Publish**.
 
-```javascript
-export const firebaseConfig = {
-  apiKey: "…",
-  authDomain: "…",
-  projectId: "…",
-  storageBucket: "…",
-  messagingSenderId: "…",
-  appId: "…",
-};
-```
+> `apiKey` في Firebase ليس سرًّا — يُرسل للمتصفح بالضرورة. الحدّ الأمني
+> الحقيقي هو قواعد Firestore، وهي مُختبَرة في كل دفعة.
 
-4. فعّل Firestore، وانشر `config/firestore.rules`.
+للتطوير بلا مشروع حقيقي: `VITE_USE_EMULATOR=true` ثم `npm run emulator`.
 
-> `apiKey` في Firebase ليس سرًّا — فهو يُرسل للمتصفح بالضرورة. الحدّ الأمني
-> الحقيقي هو قواعد Firestore و App Check والتحقق على الخادم.
+---
 
-## المجموعات
+## المجموعات المبنيّة فعلًا
 
-نموذج البيانات القديم (`fam_*` مع PIN لكل مستخدم) **ملغى**. النموذج الجديد
-يُبنى في المرحلة 1 على Firebase Auth، بالبنية التالية (بلا `tenantId` —
-النظام لمركز واحد):
+النموذج القديم (`fam_*` مع PIN لكل مستخدم) **ملغى**. القائم اليوم:
 
 ```text
-families/{familyId}
-  members/{memberId}
-games/{gameId}
-questions/{questionId}
-  secret/{answerId}        ← الإجابة الصحيحة، ممنوعة على العميل
-sessions/{sessionId}
-  registrations/{familyId}
-  answers/{answerId}
-  leaderboard/{familyId}
-scoreLedger/{entryId}       ← كتابة من الخادم فقط
-auditLogs/{auditId}         ← كتابة من الخادم فقط
+users/{uid}
+  ├─ uid · email · displayName · avatar
+  ├─ role    : 'admin' | 'member'
+  └─ status  : 'ACTIVE' | 'SUSPENDED'
+
+users/{uid}/profiles/{profileId}      ← ملفات الأبناء
+  └─ displayName · avatar · ageBand?    (بيانات عرض بحتة، بلا أي سلطة)
+
+questions/{questionId}                ← بنك الأسئلة المشترك
+  ├─ type       : 'MCQ' | 'TRUE_FALSE' | 'WORD_SCRAMBLE'
+  ├─ prompt · answer · category
+  ├─ choices?   : string[]              (غائبة في الكلمة المبعثرة)
+  ├─ difficulty : 'EASY' | 'MEDIUM' | 'HARD'
+  ├─ status     : 'DRAFT' | 'PUBLISHED'
+  └─ createdBy  : uid                   (ثابت بعد الإنشاء)
 ```
+
+**لا `tenantId`** — النظام لمركز واحد بمدير واحد.
+
+### ثوابت يفرضها الخادم
+
+| الثابت | الأثر |
+|---|---|
+| `answer` ∈ `choices` في أنواع الاختيار | يستحيل سؤال بلا إجابة صحيحة |
+| «صح/خطأ» بخيارين مثبَّتين | شكل واحد لا اجتهادات |
+| الكلمة المبعثرة بلا `choices` وطولها ≥ 3 | بيانات صالحة للّعب |
+| العضو ينشئ `DRAFT` باسمه فقط | لا نشر بلا مراجعة، ولا انتحال نسبة |
+| `createdBy` لا يتغيّر — حتى من المدير | النسبة تبقى صحيحة |
+
+---
+
+## ⚠️ الإجابة مكشوفة — قيد بنيوي لا سهو
+
+قواعد Firestore تعمل على مستوى **المستند لا الحقل**. من يستطيع قراءة
+السؤال يقرأ حقل `answer` معه. لا يوجد إعداد يغيّر ذلك.
+
+إخفاؤها يتطلّب تقديم السؤال عبر **Cloud Function** تحجب الإجابة، وذلك
+يتطلّب **خطة Blaze**. حتى ذلك الحين البنك صالح لوضع **free play** وليس
+مقاومًا للغش.
+
+> صُمِّم نموذج سابق على `questions/{id}/secret/{answerId}` بقاعدة
+> `allow read: if false`. لم يُبنَ، ولا يُغني: لعبة العميل تحتاج الإجابة
+> للتقييم، فبلا خادم يقيّم لا فائدة من إخفائها عنه.
+
+---
+
+## ما لم يُبنَ بعد — ويتطلّب خادمًا
+
+| المجموعة | الغرض | المانع |
+|---|---|---|
+| `scoreLedger/{entryId}` | نقاط رسمية بدفتر غير قابل للتعديل | كتابة من الخادم حصرًا → Blaze |
+| `sessions/{sessionId}` | جلسات حية وانضمام QR | خادم |
+| `auditLogs/{auditId}` | سجلّ تدقيق | كتابة من الخادم حصرًا |
+
+لا تُنشأ هذه المجموعات قبل وجود الخادم: مجموعة يكتبها العميل ويُدّعى أنها
+«سلطة الخادم» أسوأ من غيابها.

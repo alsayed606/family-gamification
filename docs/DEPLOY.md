@@ -81,8 +81,8 @@ GitHub Pages كافية رغم أنها تخدم ملفات ثابتة فقط.
 |---|---|:--:|:--:|
 | `npm ci` | تثبيت مطابق لـ `package-lock.json` | ✅ | ✅ |
 | `npm run typecheck` | `tsc` بلا أخطاء | ✅ | ✅ |
-| `npm test` | 62 اختبار وحدة | ✅ | ✅ |
-| `npm run rules:test` | 40 اختبار قواعد على المحاكي | ✅ | ✅ |
+| `npm test` | اختبارات الوحدة | ✅ | ✅ |
+| `npm run rules:test` | اختبارات القواعد على المحاكي | ✅ | ✅ |
 | `npm run build` | البناء إلى `dist/` | ✅ | ✅ |
 | نشر | رفع `dist/` إلى Pages | — | ✅ |
 
